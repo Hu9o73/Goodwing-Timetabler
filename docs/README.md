@@ -17,3 +17,11 @@ The app runs with Python. Download the repo, go to the file location in your ter
 
 You'll run whatever function is called in `GoodwingTimetabler/__main__.py`.
 You may want to check if `run_app` or `run_test` is called before running the project. (This will be cleaned and polish later on in the development, there's no much user-friendliness so far...)
+
+## Documentation
+
+| File           | Description                      |
+|------------------|----------------------------------|
+| [Problem Definition](docs/Problem_Definition.md) | Our problem, thoroughly defined |
+| [Maths Constraints](docs/Constraints_Maths.md) | The constraints of our problem, defined as mathematical relations |
+| [Acknowledgements](docs/ACKNOWLEDGEMENTS.md) | Acknowledgements, references to helpful projects |

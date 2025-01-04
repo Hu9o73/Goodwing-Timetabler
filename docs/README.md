@@ -1,6 +1,6 @@
 ﻿# :calendar: Goodwing Timetabler :calendar:
 
-## The Timetabling Problem, briefly:
+## The Timetabling Problem, briefly
 
 The disruptions caused by the COVID-19 pandemic have introduced new constraints in managing several complex problems of daily life. Among these, work schedule planning, an NP-hard optimization problem, has been particularly affected. This type of problem appears in various sectors such as administration, transportation, production, healthcare, and education.
 

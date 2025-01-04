@@ -22,6 +22,6 @@ You may want to check if `run_app` or `run_test` is called before running the pr
 
 | File           | Description                      |
 |------------------|----------------------------------|
-| [Problem Definition](docs/Problem_Definition.md) | Our problem, thoroughly defined |
-| [Maths Constraints](docs/Constraints_Maths.md) | The constraints of our problem, defined as mathematical relations |
-| [Acknowledgements](docs/ACKNOWLEDGEMENTS.md) | Acknowledgements, references to helpful projects |
+| [Problem Definition](.Problem_Definition.md) | Our problem, thoroughly defined |
+| [Maths Constraints](.Constraints_Maths.md) | The constraints of our problem, defined as mathematical relations |
+| [Acknowledgements](.ACKNOWLEDGEMENTS.md) | Acknowledgements, references to helpful projects |

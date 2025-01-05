@@ -3,6 +3,7 @@
 #
 
 import datetime as dt
+import yaml
 from typing import List
 
 #
@@ -24,7 +25,7 @@ class Timeslot:
         self.end = end
 
     def __str__(self):
-        return f"Timeslot date: {self.date} , starts at: {self.start} , ends at: {self.end}"
+        return f"Timeslot date: {self.day} , starts at: {self.start} , ends at: {self.end}"
 
 
 class Person:
@@ -49,10 +50,11 @@ class Subject:
     - id : str | The id of the subject (if applicable, '0' by default)
     - hours : float | The number of hours to complete the course (9.0 by default)
     """
-    def __init__(self, name: str, id: str = "0", hours: float = 9.0):
+    def __init__(self, name: str, id: str = "0", hours: float = 9.0, color: str = "29FF65"):
         self.name = name
         self.id = id
         self.hours = hours
+        self.color = color
 
     def __str__(self):
         return f"{self.name} with id: {self.id}"
@@ -169,6 +171,19 @@ class Course:
         self.teacher = teacher
         self.room = room
 
+    def __str__(self):
+        return f"Course: {self.subject.name} | Group: {self.group.name} | Teacher: {self.teacher.first_name} {self.teacher.last_name} | Timeslot: {self.timeslot} | Room: {self.room.name} ({self.room.type})"
+
+    def to_yaml_entry(self):
+        day = self.timeslot.day.strftime('%a')
+        time = f"{self.timeslot.start.strftime('%H:%M')} - {self.timeslot.end.strftime('%H:%M')}"
+        entry = {
+            "name": f"{self.subject.name}\n({self.room.name})",
+            "days": day,
+            "time": time,
+            "color": self.subject.color,
+        }
+        return entry
 
 class University:
     """

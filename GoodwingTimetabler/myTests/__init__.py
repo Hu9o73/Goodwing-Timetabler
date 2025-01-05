@@ -1,1 +1,1 @@
-from .tests import generateMockUniversity
+from .tests import *

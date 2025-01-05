@@ -11,12 +11,12 @@ def generateUniv(name: str):
     #   Subjects instantiation
     #
 
-    s1 = Subject("Basic Maths", "UNI011", 54.0)
-    s2 = Subject("Basic Physics", "UNI012", 36.0)
-    s3 = Subject("Basic Informatics", "UNI013", 27.0)
-    s4 = Subject("Advanced Maths", "UNI012", 36.0)
-    s5 = Subject("Advanced Physics", "UNI022", 39.0)
-    s6 = Subject("Advanced Informatics", "UNI032", 42.0)
+    s1 = Subject("Basic Maths", "UNI011", 54.0, "0c0fcc")
+    s2 = Subject("Basic Physics", "UNI012", 36.0, "9008d4")
+    s3 = Subject("Basic Informatics", "UNI013", 27.0, "05e6de")
+    s4 = Subject("Advanced Maths", "UNI012", 36.0, "0a0ca3")
+    s5 = Subject("Advanced Physics", "UNI022", 39.0, "55047d")
+    s6 = Subject("Advanced Informatics", "UNI032", 42.0, "07b3ac")
 
     A1_subjects = [s1, s2, s3]
     A2_subjects = [s4, s5, s6]
@@ -114,6 +114,3 @@ def generate_timeslots(start_date, days, time_ranges):
         for start, end in time_ranges:
             timeslots.append(Timeslot(current_date, start, end))
     return timeslots
-
-timeslost = generate_timeslots(dt.date(2025, 1, 6), 7, time_ranges)
-

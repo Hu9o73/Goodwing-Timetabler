@@ -12,3 +12,6 @@ class CSP:
     def __init__(self, university: University, courses: List[Course]):
         self.university = university
         self.courses = courses
+
+    def __str__(self):
+        return f"CSP for {self.university.name}"

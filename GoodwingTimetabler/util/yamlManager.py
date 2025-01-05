@@ -1,4 +1,5 @@
 from csp import *
+import yaml
 
 def append_courses_to_yaml_file(courses: List[Course], file_path):
     """

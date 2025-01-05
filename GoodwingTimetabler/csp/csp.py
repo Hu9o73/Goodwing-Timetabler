@@ -15,3 +15,6 @@ class CSP:
 
     def __str__(self):
         return f"CSP for {self.university.name}"
+    
+    def validateConstraints(self):
+        pass

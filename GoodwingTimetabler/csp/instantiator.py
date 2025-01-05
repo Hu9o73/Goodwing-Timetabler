@@ -2,7 +2,7 @@
 
 from .objects import *
 
-def generateUniv(name: str):
+def generateUniv(name: str, start_date: dt.date, days: int, timeslots: List[tuple]):
     """
     Generates a mock university with the given name.
     """
@@ -83,7 +83,7 @@ def generateUniv(name: str):
     #   University
     #
 
-    my_univ = University(name, rooms, teachers, [A1, A2])
+    my_univ = University(name, rooms, teachers, [A1, A2], start_date, days, timeslots)
 
     return my_univ
 
@@ -106,11 +106,4 @@ time_ranges = [
     (dt.time(18, 45), dt.time(20, 15)),
 ]
 
-# Generation des timeslots
-def generate_timeslots(start_date, days, time_ranges):
-    timeslots = []
-    for day_offset in range(days):
-        current_date = start_date + dt.timedelta(days=day_offset)
-        for start, end in time_ranges:
-            timeslots.append(Timeslot(current_date, start, end))
-    return timeslots
+

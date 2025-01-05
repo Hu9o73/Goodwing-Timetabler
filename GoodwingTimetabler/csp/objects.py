@@ -3,7 +3,6 @@
 #
 
 import datetime as dt
-import yaml
 from typing import List
 
 #
@@ -178,12 +177,23 @@ class Course:
         day = self.timeslot.day.strftime('%a')
         time = f"{self.timeslot.start.strftime('%H:%M')} - {self.timeslot.end.strftime('%H:%M')}"
         entry = {
-            "name": f"{self.subject.name}\n({self.room.name})",
+            "name": f"{self.subject.name}\n{self.teacher.first_name} {self.teacher.last_name}\n({self.room.name})",
             "days": day,
             "time": time,
             "color": self.subject.color,
         }
         return entry
+
+
+# Generation des timeslots
+def generate_timeslots(start_date: dt.date, days: int, time_ranges: List[tuple]):
+    timeslots = []
+    for day_offset in range(days):
+        current_date = start_date + dt.timedelta(days=day_offset)
+        for start, end in time_ranges:
+            timeslots.append(Timeslot(current_date, start, end))
+    return timeslots
+
 
 class University:
     """
@@ -193,12 +203,18 @@ class University:
     - rooms : [Room] | List of rooms in our university.
     - teachers: [Teacher] | List of teachers in the university.
     - promotions: [Promotion] | List of promotions in the university.
+    - start_date: datetime.date | First day of school.
+    - days: int | number of days that the semester lasts.
+    - time_ranges: [Timeslot] | Allowed Timeslots
     """
-    def __init__(self, name: str, rooms: List[Room], teachers: List[Teacher], promotions: List[Promotion]):
+    def __init__(self, name: str, rooms: List[Room], teachers: List[Teacher], promotions: List[Promotion], start_date: dt.date, days: int, time_ranges: List[tuple]):
         self.name = name
         self.rooms = rooms
         self.teachers = teachers
         self.promotions = promotions
+        self.timeslots = generate_timeslots(start_date, days, time_ranges)
 
     def __str__(self):
         return f"{self.name} has {len(self.rooms)} rooms, {len(self.teachers)} teachers and {len(self.promotions)} promotions."
+
+            

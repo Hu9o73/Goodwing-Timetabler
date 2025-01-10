@@ -1,144 +1,144 @@
-- color: 0a0ca3
-  days: Mon
+- color: 29FF65
+  days: Sun
   name: 'Advanced Maths
 
-    Henri Barbeau
+    N/A N/A
 
     (L101)'
-  time: 08:15 - 09:45
-- color: 0a0ca3
-  days: Mon
+  time: 18:45 - 20:15
+- color: 29FF65
+  days: Tue
   name: 'Advanced Maths
 
-    Henri Barbeau
+    N/A N/A
 
-    (L101)'
-  time: 08:15 - 09:45
-- color: 0a0ca3
-  days: Mon
+    (L104)'
+  time: 18:45 - 20:15
+- color: 29FF65
+  days: Wed
   name: 'Advanced Maths
 
-    Henri Barbeau
+    N/A N/A
 
-    (L101)'
+    (L102)'
   time: 08:15 - 09:45
-- color: 0a0ca3
-  days: Mon
+- color: 29FF65
+  days: Tue
   name: 'Advanced Maths
 
-    Henri Barbeau
+    N/A N/A
 
-    (L101)'
-  time: 08:15 - 09:45
-- color: 55047d
+    (L102)'
+  time: 15:15 - 16:45
+- color: 29FF65
   days: Mon
   name: 'Advanced Physics
 
-    Christiane Brunelle
+    N/A N/A
+
+    (L104)'
+  time: 17:00 - 18:30
+- color: 29FF65
+  days: Tue
+  name: 'Advanced Physics
+
+    N/A N/A
+
+    (L104)'
+  time: 08:15 - 09:45
+- color: 29FF65
+  days: Wed
+  name: 'Advanced Physics
+
+    N/A N/A
 
     (L101)'
-  time: 08:15 - 09:45
-- color: 55047d
+  time: 11:45 - 13:15
+- color: 29FF65
   days: Mon
   name: 'Advanced Physics
 
-    Christiane Brunelle
+    N/A N/A
 
-    (L101)'
-  time: 08:15 - 09:45
-- color: 55047d
+    (L102)'
+  time: 10:00 - 11:30
+- color: 29FF65
   days: Mon
   name: 'Advanced Physics
 
-    Christiane Brunelle
+    N/A N/A
 
-    (L101)'
-  time: 08:15 - 09:45
-- color: 55047d
-  days: Mon
+    (L102)'
+  time: 18:45 - 20:15
+- color: 29FF65
+  days: Wed
   name: 'Advanced Physics
 
-    Christiane Brunelle
+    N/A N/A
 
-    (L101)'
-  time: 08:15 - 09:45
-- color: 55047d
-  days: Mon
-  name: 'Advanced Physics
+    (L102)'
+  time: 10:00 - 11:30
+- color: 29FF65
+  days: Tue
+  name: 'Advanced Informatics
 
-    Christiane Brunelle
+    N/A N/A
 
-    (L101)'
-  time: 08:15 - 09:45
-- color: 55047d
-  days: Mon
-  name: 'Advanced Physics
-
-    Christiane Brunelle
-
-    (L101)'
-  time: 08:15 - 09:45
-- color: 07b3ac
+    (L102)'
+  time: 17:00 - 18:30
+- color: 29FF65
   days: Mon
   name: 'Advanced Informatics
 
-    Maurice Vannier
+    N/A N/A
 
-    (L101)'
-  time: 08:15 - 09:45
-- color: 07b3ac
+    (L102)'
+  time: 11:45 - 13:15
+- color: 29FF65
+  days: Tue
+  name: 'Advanced Informatics
+
+    N/A N/A
+
+    (L102)'
+  time: 13:30 - 15:00
+- color: 29FF65
   days: Mon
   name: 'Advanced Informatics
 
-    Maurice Vannier
+    N/A N/A
 
-    (L101)'
-  time: 08:15 - 09:45
-- color: 07b3ac
+    (L102)'
+  time: 13:30 - 15:00
+- color: 29FF65
   days: Mon
   name: 'Advanced Informatics
 
-    Maurice Vannier
+    N/A N/A
 
-    (L101)'
-  time: 08:15 - 09:45
-- color: 07b3ac
+    (L102)'
+  time: 15:15 - 16:45
+- color: 29FF65
+  days: Tue
+  name: 'Advanced Informatics
+
+    N/A N/A
+
+    (L102)'
+  time: 11:45 - 13:15
+- color: 29FF65
+  days: Tue
+  name: 'Advanced Informatics
+
+    N/A N/A
+
+    (L102)'
+  time: 10:00 - 11:30
+- color: 29FF65
   days: Mon
   name: 'Advanced Informatics
 
-    Maurice Vannier
+    N/A N/A
 
-    (L101)'
-  time: 08:15 - 09:45
-- color: 07b3ac
-  days: Mon
-  name: 'Advanced Informatics
-
-    Maurice Vannier
-
-    (L101)'
-  time: 08:15 - 09:45
-- color: 07b3ac
-  days: Mon
-  name: 'Advanced Informatics
-
-    Maurice Vannier
-
-    (L101)'
-  time: 08:15 - 09:45
-- color: 07b3ac
-  days: Mon
-  name: 'Advanced Informatics
-
-    Maurice Vannier
-
-    (L101)'
-  time: 08:15 - 09:45
-- color: 07b3ac
-  days: Mon
-  name: 'Advanced Informatics
-
-    Maurice Vannier
-
-    (L101)'
+    (L105)'
   time: 08:15 - 09:45

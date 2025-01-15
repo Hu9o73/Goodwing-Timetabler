@@ -3,6 +3,7 @@
 #
 
 import datetime as dt
+from datetime import date
 from typing import List
 
 #
@@ -20,8 +21,8 @@ class Timeslot:
     """
     def __init__(self, day: dt.date, start: dt.time, end: dt.time):
         self.day = day
-        self.start = start
-        self.end = end
+        self.start:dt.time = start
+        self.end:dt.time = end
 
     def __str__(self):
         return f"Timeslot date: {self.day} , starts at: {self.start} , ends at: {self.end}"
@@ -105,9 +106,10 @@ class Room:
     - name : str | Name of the room.
     - type : str | Type of the room if it's a special room. Otherwise "default"
     """
-    def __init__(self, name: str, type: str = "default"):
+    def __init__(self, name: str, type: str = "default", id: int = 0):
         self.name = name
         self.type = type
+        self.id = id
 
     def __str__(self):
         return f"Room {self.name} has type: {self.type}"
@@ -162,6 +164,7 @@ class Course:
     - group : Group | The group attending the course
     - subject : Subject | The subject the course is about
     - teacher : Teacher | The teacher giving the course
+    - room : Room | The room where the course takes place
     """
     def __init__(self, timeslot: Timeslot, group: Group, subject: Subject, teacher: Teacher, room: Room):
         self.timeslot = timeslot
@@ -212,7 +215,20 @@ class University:
         self.rooms = rooms
         self.teachers = teachers
         self.promotions = promotions
-        self.timeslots = generate_timeslots(start_date, days, time_ranges)
+        self.timeslots: List[Timeslot] = generate_timeslots(start_date, days, time_ranges)
+        
+        start_time = self.timeslots[0].start
+        end_time = self.timeslots[0].end
+
+        # Combine with a reference date 
+        reference_date = date.today()
+        start_datetime = dt.datetime.combine(reference_date, start_time)
+        end_datetime = dt.datetime.combine(reference_date, end_time)
+
+        # Calculate the difference in hours
+        duration = (end_datetime - start_datetime).total_seconds() / 3600.0
+
+        self.timeslot_duration = duration
 
     def __str__(self):
         return f"{self.name} has {len(self.rooms)} rooms, {len(self.teachers)} teachers and {len(self.promotions)} promotions."

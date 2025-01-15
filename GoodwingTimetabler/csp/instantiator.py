@@ -11,12 +11,12 @@ def generateUniv(name: str, start_date: dt.date, days: int, timeslots: List[tupl
     #   Subjects instantiation
     #
 
-    s1 = Subject("Basic Maths", "UNI011", 54.0, "0c0fcc")
-    s2 = Subject("Basic Physics", "UNI012", 36.0, "9008d4")
-    s3 = Subject("Basic Informatics", "UNI013", 27.0, "05e6de")
-    s4 = Subject("Advanced Maths", "UNI012", 36.0, "0a0ca3")
-    s5 = Subject("Advanced Physics", "UNI022", 39.0, "55047d")
-    s6 = Subject("Advanced Informatics", "UNI032", 42.0, "07b3ac")
+    s1 = Subject("Basic Maths", "UNI011", 6.0, "0c0fcc")
+    s2 = Subject("Basic Physics", "UNI012", 9.0, "9008d4")
+    s3 = Subject("Basic Informatics", "UNI013", 6.0, "05e6de")
+    s4 = Subject("Advanced Maths", "UNI012", 6.0, "0a0ca3")
+    s5 = Subject("Advanced Physics", "UNI022", 9.0, "55047d")
+    s6 = Subject("Advanced Informatics", "UNI032", 12.0, "07b3ac")
 
     A1_subjects = [s1, s2, s3]
     A2_subjects = [s4, s5, s6]
@@ -61,14 +61,14 @@ def generateUniv(name: str, start_date: dt.date, days: int, timeslots: List[tupl
     #
 
     g1 = Group("A1_TDA")
-    g2 = Group("A1_TDB")
-    g3 = Group("A1_TDC")
-    g4 = Group("A2_TDA")
+    #g2 = Group("A1_TDB")
+    #g3 = Group("A1_TDC")
+    #g4 = Group("A2_TDA")
     g5 = Group("A2_TDB")
-    g6 = Group("A3_TDC")
+    #g6 = Group("A3_TDC")
 
-    A1_groups = [g1, g2, g3]
-    A2_groups = [g4, g5, g6]
+    A1_groups = [g1]
+    A2_groups = [g5]
 
 
     #

@@ -11,9 +11,14 @@ class CSP:
         self.generated_courses: List[Course] = []  # List of all generated courses
         self.solver = cp_model.CpSolver()
 
+        # Store objective terms
+        self.gap_penalties = []  # For storing gap penalties
+        self.balance_penalties = []  # For storing balance penalties
+
         self.createVariables()
         #self.printVariables()
         self.createConstraints()
+        self.createSoftConstraints()
         self.solveCSP()
 
     def createVariables(self):
@@ -67,7 +72,18 @@ class CSP:
         self.noMultipleCoursesOnTimeslotForGroup()
         self.noTeacherOverlap()
         self.ensureLunchBreak()
+        self.restrictWeekendTimeslots()
 
+    def createSoftConstraints(self):
+        self.balanceCoursesAcrossDays()  # Let's start with just this one
+        
+        # Use a smaller weight for the balance penalties
+        if self.balance_penalties:
+            total_cost = sum(self.balance_penalties)
+            self.model.Minimize(total_cost)
+            
+            # Debug
+            #print(f"Added {len(self.balance_penalties)} balance penalties to objective")
 
     def noRoomOverlap(self):
         courses = []
@@ -108,7 +124,6 @@ class CSP:
                     # Add constraint: courses in the same group cannot share the same timeslot
                     self.model.Add(courses[i]['timeslot'] != courses[j]['timeslot'])
 
-    
     def noTeacherOverlap(self):
         courses = []
         for _, group in self.variables.items():
@@ -127,8 +142,6 @@ class CSP:
                 # Ensure that if timeslots are the same, teachers must be different
                 self.model.Add(courses[i]['teacher'] != courses[j]['teacher']).OnlyEnforceIf(same_timeslot)
 
-
-
     def ensureLunchBreak(self):
         # Loop through all courses in the model
         for group_name, subjects in self.variables.items():
@@ -145,6 +158,89 @@ class CSP:
                     # Loop through all the lunch break timeslots to enforce no assignment for any of them
                     for lunch_slot in lunch_break_timeslots[1:]:
                         self.model.Add(timeslot_var != lunch_slot)
+
+    def restrictWeekendTimeslots(self):
+        """
+        Ensures no courses are scheduled:
+        - After the 3rd timeslot on Saturday (timeslots 3-6 of day 5)
+        - All day Sunday (timeslots 0-6 of day 6)
+        """
+        # Get all courses from all groups
+        all_courses = []
+        for group_courses in self.variables.values():
+            for subject_courses in group_courses.values():
+                all_courses.extend(subject_courses.values())
+        
+        # For each course, add constraints for weekend restrictions
+        for course in all_courses:
+            timeslot_var = course['timeslot']
+            
+            # Calculate forbidden timeslots
+            # Saturday afternoon (day 5, timeslots 3-6)
+            saturday_forbidden = list(range(5 * 7 + 3, 5 * 7 + 7))  # Timeslots 38-41
+            # All Sunday (day 6, timeslots 0-6)
+            sunday_forbidden = list(range(6 * 7, 6 * 7 + 7))    # Timeslots 42-48
+            
+            # Combine all forbidden timeslots
+            forbidden_timeslots = saturday_forbidden + sunday_forbidden
+            
+            # Add constraint to prevent scheduling in these timeslots
+            for forbidden_ts in forbidden_timeslots:
+                self.model.Add(timeslot_var != forbidden_ts)
+
+    def balanceCoursesAcrossDays(self):
+        # Process each group separately
+        for group_name, subjects in self.variables.items():
+            # Debug
+            #print(f"\nProcessing group: {group_name}")
+            
+            # Get all courses for this group
+            group_courses = []
+            for subject_courses in subjects.values():
+                group_courses.extend(subject_courses.values())
+            
+            # Debug
+            #print(f"Found {len(group_courses)} courses for this group")
+            
+            num_days = len(self.university.timeslots) // 7
+            total_courses = len(group_courses)
+            target_courses_per_day = total_courses / num_days
+            
+            # Debug
+            #print(f"Target courses per day: {target_courses_per_day}")
+            
+            # Count courses per day
+            day_counts = []
+            for day in range(num_days):
+                # Create course counters for this day
+                day_courses = self.model.NewIntVar(0, len(group_courses), f'day_count_{group_name}_{day}')
+                day_start = day * 7
+                day_end = day_start + 7
+                
+                # Count how many courses are on this day
+                course_indicators = []
+                for course in group_courses:
+                    is_on_day = self.model.NewBoolVar(f'course_on_day_{group_name}_{day}_{id(course)}')
+                    self.model.Add(course['timeslot'] >= day_start).OnlyEnforceIf(is_on_day)
+                    self.model.Add(course['timeslot'] < day_end).OnlyEnforceIf(is_on_day)
+                    course_indicators.append(is_on_day)
+                
+                self.model.Add(day_courses == sum(course_indicators))
+                day_counts.append(day_courses)
+            
+            # Add soft constraints to keep counts near the target
+            target = int(target_courses_per_day)
+            for day_idx, day_count in enumerate(day_counts):
+                # Create variables for above and below target
+                above_target = self.model.NewIntVar(0, len(group_courses), f'above_target_{group_name}_{day_idx}')
+                below_target = self.model.NewIntVar(0, len(group_courses), f'below_target_{group_name}_{day_idx}')
+                
+                # Link them to the actual count
+                self.model.Add(day_count - target == above_target - below_target)
+                
+                # Add both to penalties
+                self.balance_penalties.append(above_target)
+                self.balance_penalties.append(below_target)
 
 
     def variablesToCourses(self):

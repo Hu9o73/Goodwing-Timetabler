@@ -1,13 +1,13 @@
 - color: 0c0fcc
-  days: Tue
+  days: Wed
   name: 'Basic Maths
 
     Henri Barbeau
 
     (L101)'
-  time: 15:15 - 16:45
+  time: 17:00 - 18:30
 - color: 0c0fcc
-  days: Thu
+  days: Sat
   name: 'Basic Maths
 
     Henri Barbeau
@@ -23,11 +23,15 @@
     (L101)'
   time: 17:00 - 18:30
 - color: 0c0fcc
-  days: Tue
-  name: "Basic Maths\nTimoth\xE9 Sol\xE9\n(L103)"
-  time: 08:15 - 09:45
+  days: Wed
+  name: 'Basic Maths
+
+    Henri Barbeau
+
+    (L101)'
+  time: 15:15 - 16:45
 - color: 9008d4
-  days: Tue
+  days: Thu
   name: 'Basic Physics
 
     Christiane Brunelle
@@ -35,62 +39,74 @@
     (L101)'
   time: 10:00 - 11:30
 - color: 9008d4
-  days: Mon
+  days: Tue
   name: 'Basic Physics
 
-    Constantin Poussin
+    Christiane Brunelle
 
     (L101)'
-  time: 13:30 - 15:00
+  time: 15:15 - 16:45
+- color: 9008d4
+  days: Tue
+  name: 'Basic Physics
+
+    Christiane Brunelle
+
+    (L101)'
+  time: 08:15 - 09:45
 - color: 9008d4
   days: Mon
   name: 'Basic Physics
 
-    Constantin Poussin
+    Christiane Brunelle
 
-    (L103)'
-  time: 10:00 - 11:30
+    (L101)'
+  time: 13:30 - 15:00
 - color: 9008d4
   days: Wed
   name: 'Basic Physics
 
     Christiane Brunelle
 
-    (L104)'
+    (L101)'
   time: 08:15 - 09:45
-- color: 9008d4
-  days: Tue
-  name: 'Basic Physics
-
-    Christiane Brunelle
-
-    (L104)'
-  time: 13:30 - 15:00
 - color: 9008d4
   days: Mon
   name: 'Basic Physics
 
     Christiane Brunelle
-
-    (L104)'
-  time: 18:45 - 20:15
-- color: 05e6de
-  days: Tue
-  name: 'Basic Informatics
-
-    Josette Paquin
 
     (L101)'
-  time: 18:45 - 20:15
-- color: 05e6de
-  days: Mon
-  name: "Basic Informatics\nNapol\xE9on Matthieu\n(L101)"
   time: 15:15 - 16:45
 - color: 05e6de
-  days: Mon
-  name: "Basic Informatics\nNapol\xE9on Matthieu\n(L103)"
+  days: Sat
+  name: 'Basic Informatics
+
+    Maurice Vannier
+
+    (L101)'
   time: 08:15 - 09:45
 - color: 05e6de
-  days: Mon
-  name: "Basic Informatics\nNapol\xE9on Matthieu\n(L103)"
-  time: 17:00 - 18:30
+  days: Thu
+  name: 'Basic Informatics
+
+    Maurice Vannier
+
+    (L101)'
+  time: 08:15 - 09:45
+- color: 05e6de
+  days: Fri
+  name: 'Basic Informatics
+
+    Maurice Vannier
+
+    (L103)'
+  time: 10:00 - 11:30
+- color: 05e6de
+  days: Fri
+  name: 'Basic Informatics
+
+    Maurice Vannier
+
+    (L101)'
+  time: 08:15 - 09:45

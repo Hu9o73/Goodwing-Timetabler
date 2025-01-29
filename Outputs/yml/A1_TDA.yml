@@ -1,112 +1,96 @@
-- color: 29FF65
-  days: Wed
+- color: 0c0fcc
+  days: Tue
   name: 'Basic Maths
 
-    N/A N/A
+    Henri Barbeau
 
-    (L103)'
+    (L101)'
+  time: 15:15 - 16:45
+- color: 0c0fcc
+  days: Thu
+  name: 'Basic Maths
+
+    Henri Barbeau
+
+    (L101)'
+  time: 10:00 - 11:30
+- color: 0c0fcc
+  days: Tue
+  name: 'Basic Maths
+
+    Henri Barbeau
+
+    (L101)'
+  time: 17:00 - 18:30
+- color: 0c0fcc
+  days: Tue
+  name: "Basic Maths\nTimoth\xE9 Sol\xE9\n(L103)"
   time: 08:15 - 09:45
-- color: 29FF65
-  days: Tue
-  name: 'Basic Maths
-
-    N/A N/A
-
-    (L105)'
-  time: 13:30 - 15:00
-- color: 29FF65
-  days: Mon
-  name: 'Basic Maths
-
-    N/A N/A
-
-    (L101)'
-  time: 15:15 - 16:45
-- color: 29FF65
-  days: Mon
-  name: 'Basic Maths
-
-    N/A N/A
-
-    (L101)'
-  time: 11:45 - 13:15
-- color: 29FF65
+- color: 9008d4
   days: Tue
   name: 'Basic Physics
 
-    N/A N/A
+    Christiane Brunelle
 
     (L101)'
   time: 10:00 - 11:30
-- color: 29FF65
-  days: Tue
-  name: 'Basic Physics
-
-    N/A N/A
-
-    (L103)'
-  time: 11:45 - 13:15
-- color: 29FF65
+- color: 9008d4
   days: Mon
   name: 'Basic Physics
 
-    N/A N/A
-
-    (L103)'
-  time: 17:00 - 18:30
-- color: 29FF65
-  days: Tue
-  name: 'Basic Physics
-
-    N/A N/A
-
-    (L105)'
-  time: 17:00 - 18:30
-- color: 29FF65
-  days: Tue
-  name: 'Basic Physics
-
-    N/A N/A
-
-    (L103)'
-  time: 15:15 - 16:45
-- color: 29FF65
-  days: Mon
-  name: 'Basic Physics
-
-    N/A N/A
-
-    (L103)'
-  time: 13:30 - 15:00
-- color: 29FF65
-  days: Mon
-  name: 'Basic Informatics
-
-    N/A N/A
+    Constantin Poussin
 
     (L101)'
-  time: 10:00 - 11:30
-- color: 29FF65
+  time: 13:30 - 15:00
+- color: 9008d4
   days: Mon
+  name: 'Basic Physics
+
+    Constantin Poussin
+
+    (L103)'
+  time: 10:00 - 11:30
+- color: 9008d4
+  days: Wed
+  name: 'Basic Physics
+
+    Christiane Brunelle
+
+    (L104)'
+  time: 08:15 - 09:45
+- color: 9008d4
+  days: Tue
+  name: 'Basic Physics
+
+    Christiane Brunelle
+
+    (L104)'
+  time: 13:30 - 15:00
+- color: 9008d4
+  days: Mon
+  name: 'Basic Physics
+
+    Christiane Brunelle
+
+    (L104)'
+  time: 18:45 - 20:15
+- color: 05e6de
+  days: Tue
   name: 'Basic Informatics
 
-    N/A N/A
+    Josette Paquin
 
     (L101)'
   time: 18:45 - 20:15
-- color: 29FF65
+- color: 05e6de
   days: Mon
-  name: 'Basic Informatics
-
-    N/A N/A
-
-    (L101)'
+  name: "Basic Informatics\nNapol\xE9on Matthieu\n(L101)"
+  time: 15:15 - 16:45
+- color: 05e6de
+  days: Mon
+  name: "Basic Informatics\nNapol\xE9on Matthieu\n(L103)"
   time: 08:15 - 09:45
-- color: 29FF65
-  days: Tue
-  name: 'Basic Informatics
-
-    N/A N/A
-
-    (L101)'
-  time: 08:15 - 09:45
+- color: 05e6de
+  days: Mon
+  name: "Basic Informatics\nNapol\xE9on Matthieu\n(L103)"
+  time: 17:00 - 18:30

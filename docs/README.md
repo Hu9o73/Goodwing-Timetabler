@@ -1,4 +1,4 @@
-﻿# :calendar: Goodwing Timetabler :calendar: | V 0.0.2
+﻿# :calendar: Goodwing Timetabler :calendar: | V 0.0.3
 
 ## The Timetabling Problem, briefly
 

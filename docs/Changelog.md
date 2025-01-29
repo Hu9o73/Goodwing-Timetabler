@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.0.3
+
+- Added course balancing:
+    - First gist of course balancing, trying to spread them accross the week.
+
+- Restricted timeslots:
+    - Saturday afternoon's and Sunday's timeslots are now restricted, no course can take place on these timeslots.
+
 ## v0.0.2
 
 - Added teacher support:

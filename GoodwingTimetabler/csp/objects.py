@@ -70,9 +70,10 @@ class Teacher(Person):
     Parameters:\n
     - subjects : [Subject] | List of the subjects the teacher is able to teach
     """
-    def __init__(self, first_name: str, last_name: str, subjects: List[Subject] = []):
+    def __init__(self, first_name: str, last_name: str, subjects: List[Subject] = [], available_slots: List[int] = None):
         super().__init__(first_name, last_name)
         self.subjects = subjects
+        self.available_slots = available_slots if available_slots is not None else []
 
     def __str__(self):
         result = super().__str__() + " can teach: ["

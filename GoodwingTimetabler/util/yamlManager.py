@@ -8,14 +8,19 @@ def append_courses_to_yaml_file(courses: List[Course], file_path):
     - courses: List[Course] | A list of Course objects.
     - file_path: str | The path to the .yml file.
     """
-    # Prepare a list of YAML-compatible dictionaries for all courses
     yaml_entries = []
+    
+    print("\nDEBUG: Converting to YAML entries:")
     for course in courses:
-        yaml_entries.append(course.to_yaml_entry())
+        entry = course.to_yaml_entry()
+        print(f"Subject: {course.subject.name}")
+        print(f"YAML entry: {entry}")
+        yaml_entries.append(entry)
 
-    # Convert to YAML format
     yaml_content = yaml.dump(yaml_entries, default_flow_style=False)
+    
+    print("\nDEBUG: Final YAML content:")
+    print(yaml_content)
 
-    # Append to the file
     with open(file_path, 'w') as file:
         file.write(yaml_content)

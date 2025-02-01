@@ -30,14 +30,22 @@ def generateUniv(name: str, start_date: dt.date, days: int, timeslots: List[tupl
     physics = [s2, s5]
     informatics = [s3, s6]
 
-    t1 = Teacher("Henri", "Barbeau", maths)
-    t2 = Teacher("Timothé", "Solé", maths)
-    t3 = Teacher("Renaud", "Cerfbeer", maths)
-    t4 = Teacher("Christiane", "Brunelle", physics)
-    t5 = Teacher("Constantin", "Poussin", physics)
-    t6 = Teacher("Maurice", "Vannier", informatics)
-    t7 = Teacher("Napoléon", "Matthieu", informatics)
-    t8 = Teacher("Josette", "Paquin", informatics)
+    t1_available = [0, 3, 7, 8, 10, 14, 17, 21, 24, 28, 31, 35, 38, 42]
+    t2_available = [1, 4, 5, 9, 13, 16, 20, 23, 27, 30, 34, 37, 41, 43]
+    t3_available = [2, 6, 11, 15, 19, 22, 26, 29, 33, 36, 40, 44]
+    t4_available = [0, 4, 8, 12, 16, 20, 24, 28, 32, 36, 40, 44]
+    t5_available = [1, 5, 9, 13, 17, 21, 25, 29, 33, 37, 41]
+    t6_available = [2, 6, 10, 14, 18, 22, 26, 30, 34, 38, 42]
+    t7_available = [3, 7, 11, 15, 19, 23, 27, 31, 35, 39, 43]
+    t8_available = [0, 4, 8, 12, 16, 20, 24, 28, 32, 36, 40]
+    t1 = Teacher("Henri", "Barbeau", maths, t1_available)
+    t2 = Teacher("Timothé", "Solé", maths, t2_available)
+    t3 = Teacher("Renaud", "Cerfbeer", maths, t3_available)
+    t4 = Teacher("Christiane", "Brunelle", physics, t4_available)
+    t5 = Teacher("Constantin", "Poussin", physics, t5_available)
+    t6 = Teacher("Maurice", "Vannier", informatics, t6_available)
+    t7 = Teacher("Napoléon", "Matthieu", informatics, t7_available)
+    t8 = Teacher("Josette", "Paquin", informatics, t8_available)
 
     teachers = [t1, t2, t3, t4, t5, t6, t7, t8]
 

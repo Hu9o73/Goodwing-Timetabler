@@ -42,5 +42,7 @@ def outputSchedulesFromCSP(csp_solver: CSP):
 # Utility to output a schedule for a single group
 def outputSchedule(courses: List[Course], groupName: str):
     print(f"Outputting schedule for group {groupName}")
-    util.append_courses_to_yaml_file(courses, f'./Outputs/yml/{groupName}.yml')
-    os.system(f'pdfschedule --start-monday --font-size 8 ./Outputs/yml/{groupName}.yml ./Outputs/pdf/{groupName}.pdf')
+    util.append_courses_to_yaml_file(courses, f'./Outputs/yml/{groupName}.yml', groupName)
+    # Note: pdf schedule is buggy
+    # Schedule saved as png in the append_courses_to_yaml func (this is the one to trust !)
+    # os.system(f'pdfschedule --start-monday --font-size 8 ./Outputs/yml/{groupName}.yml ./Outputs/pdf/{groupName}.pdf')

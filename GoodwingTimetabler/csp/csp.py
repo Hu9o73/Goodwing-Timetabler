@@ -71,6 +71,7 @@ class CSP:
         self.noRoomOverlap()
         self.noMultipleCoursesOnTimeslotForGroup()
         self.noTeacherOverlap()
+        self.teacherAvailabilityConstraint()
         self.ensureLunchBreak()
         self.restrictWeekendTimeslots()
 
@@ -141,6 +142,41 @@ class CSP:
 
                 # Ensure that if timeslots are the same, teachers must be different
                 self.model.Add(courses[i]['teacher'] != courses[j]['teacher']).OnlyEnforceIf(same_timeslot)
+
+    def teacherAvailabilityConstraint(self):
+        """
+        Ensures teachers are only assigned to courses during their available timeslots.
+        """
+        courses = []
+        for _, group in self.variables.items():
+            for _, subject in group.items():
+                for _, course in subject.items():
+                    courses.append(course)
+
+        for course in courses:
+            teacher_var = course['teacher']
+            timeslot_var = course['timeslot']
+            
+            # For each potential teacher
+            for teacher_idx, teacher in enumerate(self.university.teachers):
+                if hasattr(teacher, 'available_slots') and teacher.available_slots:
+                    # Create a boolean variable for when this teacher is selected
+                    is_selected = self.model.NewBoolVar(f'teacher_{teacher_idx}_available_for_{id(course)}')
+                    
+                    # Link the boolean to the teacher assignment
+                    self.model.Add(teacher_var == teacher_idx).OnlyEnforceIf(is_selected)
+                    self.model.Add(teacher_var != teacher_idx).OnlyEnforceIf(is_selected.Not())
+                    
+                    # Create a boolean variable for each available timeslot
+                    timeslot_bools = []
+                    for ts_idx in teacher.available_slots:
+                        is_timeslot = self.model.NewBoolVar(f'is_timeslot_{ts_idx}_for_{id(course)}')
+                        self.model.Add(timeslot_var == ts_idx).OnlyEnforceIf(is_timeslot)
+                        self.model.Add(timeslot_var != ts_idx).OnlyEnforceIf(is_timeslot.Not())
+                        timeslot_bools.append(is_timeslot)
+                    
+                    # If this teacher is selected, the timeslot MUST be one of their available slots
+                    self.model.AddBoolOr(timeslot_bools).OnlyEnforceIf(is_selected)
 
     def ensureLunchBreak(self):
         # Loop through all courses in the model
@@ -284,10 +320,10 @@ class CSP:
         if status == cp_model.FEASIBLE or status == cp_model.OPTIMAL:
             print("Solution found:")
             self.variablesToCourses()
-            #for _, courses in self.variables.items():
-               # for _, course in courses.items():
-                #    for _, details in course.items():
-                #        #print(f"{details['subject']} | {details['timeslot']}: {self.solver.value(details['timeslot'])} | {details['room']}: {self.solver.value(details['room'])}")            
+            for _, courses in self.variables.items():
+                for _, course in courses.items():
+                    for _, details in course.items():
+                        print(f"{details['subject']} | {details['timeslot']}: {self.solver.value(details['timeslot'])} | {details['room']}: {self.solver.value(details['room'])}")            
         else:
             print("No solution found.")
 

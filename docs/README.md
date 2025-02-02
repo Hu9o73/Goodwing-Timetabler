@@ -1,4 +1,4 @@
-﻿# :calendar: Goodwing Timetabler :calendar: | V 0.0.3
+﻿# :calendar: Goodwing Timetabler :calendar: | V 0.0.4
 
 ## The Timetabling Problem, briefly
 
@@ -24,5 +24,4 @@ You may want to check if `run_app` or `run_test` is called before running the pr
 |------------------|----------------------------------|
 | [Problem Definition](Problem_Definition.md) | Our problem, thoroughly defined |
 | [Maths Constraints](Constraints_Maths.md) | The constraints of our problem, defined as mathematical relations |
-| [Acknowledgements](ACKNOWLEDGEMENTS.md) | Acknowledgements, references to helpful projects |
 | [Changelog](Changelog.md) | Changelog of the project |

@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.0.4
+
+- Added teachers availability.
+- Fixed schedule visualization showing too many courses.
+
 ## v0.0.3
 
 - Added course balancing:

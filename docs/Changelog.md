@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.0.5
+
+- Added the ScheduleIntelligence class to build conflict reports and gather intel about our schedule.
+- Added conflicts penalties to handle room and teacher overlaps as soft constraints.
+- Modified `noRoomOverlap()` and `noTeacherOverlap()` to handle these constraints as soft.
+    - Now, if we don't have enough rooms or teachers, we still output a schedule and its conflicts, so someone can hypothetically solve manually !
+- Removed many output debug prints. Added an intelligence report to the console output, with the eventual conflicts.
+
 ## v0.0.4
 
 - Added teachers availability.

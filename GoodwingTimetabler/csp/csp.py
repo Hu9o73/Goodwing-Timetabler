@@ -3,6 +3,156 @@ from ortools.sat.python import cp_model
 import yaml # Nested dictionnary pretty print purposes
 import time
 
+# Schedule Intel imports
+from collections import defaultdict
+from typing import Dict, List, Any
+
+
+class ScheduleIntelligence:
+    def __init__(self, generated_courses: List[Course], university: University):
+        self.courses = generated_courses
+        self.university = university
+        self.intel = {
+            'conflicts': {
+                'room_overlaps': [],
+                'teacher_overlaps': [],
+                'timeslot_conflicts': []
+            },
+            'resource_utilization': {
+                'rooms': defaultdict(list),
+                'teachers': defaultdict(list),
+                'timeslots': defaultdict(int)
+            },
+            'course_distribution': {
+                'by_subject': defaultdict(list),
+                'by_group': defaultdict(list)
+            }
+        }
+    
+    def analyze_conflicts(self):
+        """Detect and log scheduling conflicts."""
+        # Sort courses by timeslot using university's timeslots list
+        timeslot_order = self.university.timeslots
+        sorted_courses = sorted(
+            self.courses, 
+            key=lambda x: timeslot_order.index(x.timeslot)
+        )
+        
+        for i, course1 in enumerate(sorted_courses):
+            for course2 in sorted_courses[i+1:]:
+                # Room Overlap Detection
+                if (course1.timeslot == course2.timeslot and 
+                    course1.room == course2.room):
+                    self.intel['conflicts']['room_overlaps'].append({
+                        'courses': [
+                            {'subject': course1.subject.name, 'group': course1.group.name},
+                            {'subject': course2.subject.name, 'group': course2.group.name}
+                        ],
+                        'timeslot': timeslot_order.index(course1.timeslot),
+                        'room': course1.room.name
+                    })
+                
+                # Teacher Overlap Detection
+                if (course1.timeslot == course2.timeslot and 
+                    course1.teacher == course2.teacher):
+                    self.intel['conflicts']['teacher_overlaps'].append({
+                        'courses': [
+                            {'subject': course1.subject.name, 'group': course1.group.name},
+                            {'subject': course2.subject.name, 'group': course2.group.name}
+                        ],
+                        'timeslot': timeslot_order.index(course1.timeslot),
+                        'teacher': course1.teacher.last_name
+                    })
+    
+    def analyze_resource_utilization(self):
+        """Analyze how resources are being used."""
+        timeslot_order = self.university.timeslots
+        
+        for course in self.courses:
+            timeslot_index = timeslot_order.index(course.timeslot)
+            
+            # Room utilization
+            self.intel['resource_utilization']['rooms'][course.room.name].append({
+                'subject': course.subject.name,
+                'group': course.group.name,
+                'timeslot': timeslot_index
+            })
+            
+            # Teacher utilization
+            self.intel['resource_utilization']['teachers'][course.teacher.last_name].append({
+                'subject': course.subject.name,
+                'group': course.group.name,
+                'timeslot': timeslot_index
+            })
+            
+            # Timeslot utilization
+            self.intel['resource_utilization']['timeslots'][timeslot_index] += 1
+            
+            # Course distribution
+            self.intel['course_distribution']['by_subject'][course.subject.name].append({
+                'group': course.group.name,
+                'timeslot': timeslot_index,
+                'room': course.room.name
+            })
+            
+            self.intel['course_distribution']['by_group'][course.group.name].append({
+                'subject': course.subject.name,
+                'timeslot': timeslot_index,
+                'room': course.room.name
+            })
+    
+    def generate_report(self):
+        """Generate a comprehensive scheduling intelligence report."""
+        print("\n==== SCHEDULING INTELLIGENCE REPORT ====")
+        
+        # Conflict Summary
+        print("\n1. CONFLICT ANALYSIS")
+        print(f"   - Room Overlaps: {len(self.intel['conflicts']['room_overlaps'])}")
+        for overlap in self.intel['conflicts']['room_overlaps']:
+            print(f"     * Timeslot {overlap['timeslot']}, Room {overlap['room']}:")
+            for course in overlap['courses']:
+                print(f"       - {course['subject']} ({course['group']})")
+        
+        print(f"   - Teacher Overlaps: {len(self.intel['conflicts']['teacher_overlaps'])}")
+        for overlap in self.intel['conflicts']['teacher_overlaps']:
+            print(f"     * Timeslot {overlap['timeslot']}, Teacher {overlap['teacher']}:")
+            for course in overlap['courses']:
+                print(f"       - {course['subject']} ({course['group']})")
+        
+        # Resource Utilization
+        print("\n2. RESOURCE UTILIZATION")
+        print("   Top 3 Most Used Rooms:")
+        room_usage = sorted(
+            self.intel['resource_utilization']['rooms'].items(), 
+            key=lambda x: len(x[1]), 
+            reverse=True
+        )[:3]
+        for room, courses in room_usage:
+            print(f"     * {room}: {len(courses)} courses")
+        
+        print("   Top 3 Most Used Teachers:")
+        teacher_usage = sorted(
+            self.intel['resource_utilization']['teachers'].items(), 
+            key=lambda x: len(x[1]), 
+            reverse=True
+        )[:3]
+        for teacher, courses in teacher_usage:
+            print(f"     * {teacher}: {len(courses)} courses")
+        
+        # Timeslot Distribution
+        print("\n3. TIMESLOT DISTRIBUTION")
+        sorted_timeslots = sorted(
+            self.intel['resource_utilization']['timeslots'].items(), 
+            key=lambda x: x[1], 
+            reverse=True
+        )
+        print("   Top 3 Most Used Timeslots:")
+        for timeslot, count in sorted_timeslots[:3]:
+            print(f"     * Timeslot {timeslot}: {count} courses")
+        
+        print("\n==== END OF INTELLIGENCE REPORT ====")
+
+
 class CSP:
     def __init__(self, university: University):
         self.university = university
@@ -14,6 +164,7 @@ class CSP:
         # Store objective terms
         self.gap_penalties = []  # For storing gap penalties
         self.balance_penalties = []  # For storing balance penalties
+        self.conflict_penalties = []  # For storing conflict penalties
 
         self.createVariables()
         #self.printVariables()
@@ -76,38 +227,51 @@ class CSP:
         self.restrictWeekendTimeslots()
 
     def createSoftConstraints(self):
-        self.balanceCoursesAcrossDays()  # Let's start with just this one
+        # Balance courses across days
+        self.balanceCoursesAcrossDays()
         
-        # Use a smaller weight for the balance penalties
+        # Combine different penalty types
+        penalties = []
         if self.balance_penalties:
-            total_cost = sum(self.balance_penalties)
+            penalties.extend(self.balance_penalties)
+        if self.conflict_penalties:
+            penalties.extend(self.conflict_penalties)
+        
+        # Minimize total penalties
+        if penalties:
+            total_cost = sum(penalties)
             self.model.Minimize(total_cost)
-            
-            # Debug
-            #print(f"Added {len(self.balance_penalties)} balance penalties to objective")
 
     def noRoomOverlap(self):
         courses = []
         for _, group in self.variables.items():
-            # Group is a Tuple with : (group name, corresponding items)
             for _, subject in group.items():
-                # Subject is a Tuple with : (subject name, corresponding items)
                 for course_key, course in subject.items():
                     courses.append(course)
 
         for i in range(len(courses)):
             for j in range(i + 1, len(courses)):
-                # Add constraint: if rooms are the same, timeslots must be different
-
-                # Create a Boolean variable representing the condition
-                same_timeslot = self.model.NewBoolVar(f'same_timeslot_{i}_{j}')
+                # Create a boolean variable for room overlap
+                overlap_var = self.model.NewBoolVar(f'room_overlap_{i}_{j}')
                 
-                # Add the condition to define the Boolean variable
+                # Define room overlap condition
+                same_timeslot = self.model.NewBoolVar(f'same_timeslot_{i}_{j}')
                 self.model.Add(courses[i]['timeslot'] == courses[j]['timeslot']).OnlyEnforceIf(same_timeslot)
                 self.model.Add(courses[i]['timeslot'] != courses[j]['timeslot']).OnlyEnforceIf(same_timeslot.Not())
                 
-                # Add the constraint for room overlap, enforced only if the timeslots are the same
-                self.model.Add(courses[i]['room'] != courses[j]['room']).OnlyEnforceIf(same_timeslot)
+                # Room must be different if timeslots are the same
+                room_overlap = self.model.NewBoolVar(f'room_conflict_{i}_{j}')
+                self.model.Add(courses[i]['room'] == courses[j]['room']).OnlyEnforceIf(room_overlap)
+                self.model.Add(courses[i]['room'] != courses[j]['room']).OnlyEnforceIf(room_overlap.Not())
+                
+                # Combine conditions
+                self.model.Add(room_overlap == 1).OnlyEnforceIf(same_timeslot)
+                
+                # Add conflict penalty
+                conflict_penalty = self.model.NewIntVar(0, 1, f'room_overlap_penalty_{i}_{j}')
+                self.model.Add(conflict_penalty == room_overlap).OnlyEnforceIf(same_timeslot)
+                
+                self.conflict_penalties.append(conflict_penalty)
 
     def noMultipleCoursesOnTimeslotForGroup(self):
         courses = []
@@ -134,14 +298,23 @@ class CSP:
 
         for i in range(len(courses)):
             for j in range(i + 1, len(courses)):
-                # Create a Boolean variable representing whether two courses have the same timeslot
+                # Similar to room overlap, create penalty variables
                 same_timeslot = self.model.NewBoolVar(f'same_timeslot_teacher_{i}_{j}')
-
                 self.model.Add(courses[i]['timeslot'] == courses[j]['timeslot']).OnlyEnforceIf(same_timeslot)
                 self.model.Add(courses[i]['timeslot'] != courses[j]['timeslot']).OnlyEnforceIf(same_timeslot.Not())
 
-                # Ensure that if timeslots are the same, teachers must be different
-                self.model.Add(courses[i]['teacher'] != courses[j]['teacher']).OnlyEnforceIf(same_timeslot)
+                teacher_overlap = self.model.NewBoolVar(f'teacher_conflict_{i}_{j}')
+                self.model.Add(courses[i]['teacher'] == courses[j]['teacher']).OnlyEnforceIf(teacher_overlap)
+                self.model.Add(courses[i]['teacher'] != courses[j]['teacher']).OnlyEnforceIf(teacher_overlap.Not())
+
+                # Combine conditions
+                self.model.Add(teacher_overlap == 1).OnlyEnforceIf(same_timeslot)
+                
+                # Add conflict penalty
+                conflict_penalty = self.model.NewIntVar(0, 1, f'teacher_overlap_penalty_{i}_{j}')
+                self.model.Add(conflict_penalty == teacher_overlap).OnlyEnforceIf(same_timeslot)
+                
+                self.conflict_penalties.append(conflict_penalty)
 
     def teacherAvailabilityConstraint(self):
         """
@@ -312,19 +485,38 @@ class CSP:
          #   print(course)                 
 
     def solveCSP(self):
-        """Solve the CSP problem."""
+        """Enhanced solve method with comprehensive conflict tracking."""
         start_time = time.time()
+
+        # Configure solver for flexibility
+        self.solver.parameters.num_search_workers = 4
+        self.solver.parameters.max_time_in_seconds = 60.0
 
         status = self.solver.Solve(self.model)
 
         if status == cp_model.FEASIBLE or status == cp_model.OPTIMAL:
             print("Solution found:")
             self.variablesToCourses()
+            
+            # Print course assignments (debug)
             for _, courses in self.variables.items():
                 for _, course in courses.items():
                     for _, details in course.items():
-                        print(f"{details['subject']} | {details['timeslot']}: {self.solver.value(details['timeslot'])} | {details['room']}: {self.solver.value(details['room'])}")            
+                        print(f"{details['subject']} | Timeslot: {self.solver.Value(details['timeslot'])} | Room: {self.solver.Value(details['room'])}")
+            
+            # Perform schedule intelligence analysis
+            try:
+                schedule_intel = ScheduleIntelligence(self.generated_courses, self.university)
+                schedule_intel.analyze_conflicts()
+                schedule_intel.analyze_resource_utilization()
+                schedule_intel.generate_report()
+            except Exception as e:
+                print(f"Error in schedule intelligence analysis: {e}")
+                import traceback
+                traceback.print_exc()
         else:
-            print("No solution found.")
-
+            print("No complete solution found. Analyzing partial results...")
+        
         print(f"Computational time: {round((time.time()-start_time),3)} s")
+
+        return self.generated_courses

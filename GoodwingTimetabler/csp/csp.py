@@ -2,11 +2,41 @@ from .objects import *
 from ortools.sat.python import cp_model
 import yaml # Nested dictionnary pretty print purposes
 import time
+import sys
+import threading
 
 # Schedule Intel imports
 from collections import defaultdict
 from typing import Dict, List, Any
 
+class ChronometerCallback(cp_model.CpSolverSolutionCallback):
+    def __init__(self):
+        super().__init__()
+        self.start_time = time.time()
+        self.running = True
+        self.thread = threading.Thread(target=self.update_timer, daemon=True)  # Daemon thread to auto-stop
+        self.thread.start()
+
+    def update_timer(self):
+        """Continuously update elapsed time every second until stopped."""
+        while self.running:
+            elapsed = time.time() - self.start_time
+            sys.stdout.write(f"\rElapsed time: {elapsed:.2f} s")
+            sys.stdout.flush()
+            time.sleep(1)  # Update every second
+
+    def OnSolutionCallback(self):
+        """Update elapsed time when a solution is found."""
+        elapsed = time.time() - self.start_time
+        sys.stdout.write(f"\rElapsed time: {elapsed:.2f} s")
+        sys.stdout.flush()
+
+    def EndSearch(self):
+        """Stop the chronometer and ensure the final time is displayed."""
+        self.running = False  # Stop the loop
+        self.thread.join(timeout=1)  # Ensure the thread stops (with a small timeout)
+        elapsed = time.time() - self.start_time
+        print(f"\nTotal solving time: {elapsed:.2f} s")
 
 class ScheduleIntelligence:
     def __init__(self, generated_courses: List[Course], university: University):
@@ -160,6 +190,7 @@ class CSP:
         self.variables = {}  # Dictionary to store variables for each course
         self.generated_courses: List[Course] = []  # List of all generated courses
         self.solver = cp_model.CpSolver()
+        self.chronometer = ChronometerCallback()
 
         # Store objective terms
         self.gap_penalties = []  # For storing gap penalties
@@ -492,10 +523,11 @@ class CSP:
         self.solver.parameters.num_search_workers = 4
         self.solver.parameters.max_time_in_seconds = 60.0
 
-        status = self.solver.Solve(self.model)
+        status = self.solver.Solve(self.model, self.chronometer)
+        self.chronometer.running = False
 
         if status == cp_model.FEASIBLE or status == cp_model.OPTIMAL:
-            print("Solution found:")
+            print("\nSolution found:")
             self.variablesToCourses()
             
             # Print course assignments (debug)

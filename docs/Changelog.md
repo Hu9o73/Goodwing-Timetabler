@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.0.6
+
+- Added problem instance generation using an excel file.
+    - Makes things way easier to test different instances !
+
 ## v0.0.5
 
 - Added the ScheduleIntelligence class to build conflict reports and gather intel about our schedule.

@@ -1,0 +1,124 @@
+- color: 0a0ca3
+  days: Mon
+  name: "Advanced Maths\nTimoth\xE9 Sol\xE9\n(AmphiC)"
+  time: 15:15 - 16:45
+- color: 0a0ca3
+  days: Mon
+  name: 'Advanced Maths
+
+    Achille Cochet
+
+    (L102)'
+  time: 18:45 - 20:15
+- color: 0a0ca3
+  days: Tue
+  name: "Advanced Maths\nTimoth\xE9 Sol\xE9\n(L105)"
+  time: 08:15 - 09:45
+- color: 0a0ca3
+  days: Mon
+  name: "Advanced Maths\nTimoth\xE9 Sol\xE9\n(AmphiC)"
+  time: 17:00 - 18:30
+- color: 55047d
+  days: Tue
+  name: 'Advanced Physics
+
+    Christiane Brunelle
+
+    (L105)'
+  time: 18:45 - 20:15
+- color: 55047d
+  days: Thu
+  name: 'Advanced Physics
+
+    Christiane Brunelle
+
+    (L105)'
+  time: 18:45 - 20:15
+- color: 55047d
+  days: Tue
+  name: 'Advanced Physics
+
+    Constantin Poussin
+
+    (AmphiC)'
+  time: 10:00 - 11:30
+- color: 55047d
+  days: Fri
+  name: 'Advanced Physics
+
+    Christiane Brunelle
+
+    (L104)'
+  time: 17:00 - 18:30
+- color: 55047d
+  days: Wed
+  name: 'Advanced Physics
+
+    Constantin Poussin
+
+    (L105)'
+  time: 18:45 - 20:15
+- color: 55047d
+  days: Thu
+  name: 'Advanced Physics
+
+    Christiane Brunelle
+
+    (AmphiC)'
+  time: 13:30 - 15:00
+- color: 07b3ac
+  days: Thu
+  name: 'Advanced Informatics
+
+    Josette Paquin
+
+    (AmphiC)'
+  time: 10:00 - 11:30
+- color: 07b3ac
+  days: Fri
+  name: 'Advanced Informatics
+
+    Josette Paquin
+
+    (L104)'
+  time: 10:00 - 11:30
+- color: 07b3ac
+  days: Sat
+  name: 'Advanced Informatics
+
+    Josette Paquin
+
+    (L105)'
+  time: 08:15 - 09:45
+- color: 07b3ac
+  days: Sat
+  name: 'Advanced Informatics
+
+    Josette Paquin
+
+    (AmphiC)'
+  time: 10:00 - 11:30
+- color: 07b3ac
+  days: Tue
+  name: "Advanced Informatics\nNapol\xE9on Matthieu\n(L105)"
+  time: 15:15 - 16:45
+- color: 07b3ac
+  days: Wed
+  name: "Advanced Informatics\nNapol\xE9on Matthieu\n(L105)"
+  time: 10:00 - 11:30
+- color: 07b3ac
+  days: Thu
+  name: 'Advanced Informatics
+
+    Josette Paquin
+
+    (AmphiC)'
+  time: 17:00 - 18:30
+- color: 07b3ac
+  days: Fri
+  name: 'Advanced Informatics
+
+    Josette Paquin
+
+    (L105)'
+  time: 18:45 - 20:15

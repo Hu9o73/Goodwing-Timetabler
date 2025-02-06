@@ -1,132 +1,132 @@
 - color: 0a0ca3
-  days: Sat
+  days: Mon
   name: 'Advanced Maths
 
     Henri Barbeau
 
-    (L102)'
+    (AmphiC)'
   time: 08:15 - 09:45
 - color: 0a0ca3
-  days: Sat
+  days: Fri
   name: 'Advanced Maths
 
     Renaud Cerfbeer
 
-    (L102)'
-  time: 10:00 - 11:30
+    (L103)'
+  time: 18:45 - 20:15
 - color: 0a0ca3
   days: Mon
-  name: "Advanced Maths\nTimoth\xE9 Sol\xE9\n(L101)"
-  time: 17:00 - 18:30
-- color: 0a0ca3
-  days: Thu
   name: 'Advanced Maths
 
-    Renaud Cerfbeer
+    Henri Barbeau
 
-    (L101)'
-  time: 17:00 - 18:30
-- color: 55047d
+    (AmphiC)'
+  time: 18:45 - 20:15
+- color: 0a0ca3
   days: Wed
+  name: 'Advanced Maths
+
+    Henri Barbeau
+
+    (L105)'
+  time: 08:15 - 09:45
+- color: 55047d
+  days: Thu
   name: 'Advanced Physics
 
     Constantin Poussin
 
-    (L101)'
+    (AmphiC)'
+  time: 15:15 - 16:45
+- color: 55047d
+  days: Sat
+  name: 'Advanced Physics
+
+    Constantin Poussin
+
+    (L104)'
+  time: 08:15 - 09:45
+- color: 55047d
+  days: Tue
+  name: 'Advanced Physics
+
+    Constantin Poussin
+
+    (AmphiC)'
   time: 13:30 - 15:00
 - color: 55047d
-  days: Thu
-  name: 'Advanced Physics
-
-    Constantin Poussin
-
-    (L101)'
-  time: 08:15 - 09:45
-- color: 55047d
-  days: Thu
-  name: 'Advanced Physics
-
-    Constantin Poussin
-
-    (L101)'
-  time: 15:15 - 16:45
-- color: 55047d
-  days: Fri
-  name: 'Advanced Physics
-
-    Christiane Brunelle
-
-    (L101)'
-  time: 08:15 - 09:45
-- color: 55047d
   days: Fri
   name: 'Advanced Physics
 
     Constantin Poussin
 
-    (L101)'
+    (AmphiC)'
   time: 10:00 - 11:30
 - color: 55047d
+  days: Tue
+  name: 'Advanced Physics
+
+    Constantin Poussin
+
+    (AmphiC)'
+  time: 17:00 - 18:30
+- color: 55047d
   days: Fri
   name: 'Advanced Physics
 
-    Christiane Brunelle
+    Constantin Poussin
 
-    (L101)'
+    (L104)'
   time: 15:15 - 16:45
 - color: 07b3ac
-  days: Mon
+  days: Wed
+  name: 'Advanced Informatics
+
+    Josette Paquin
+
+    (L105)'
+  time: 15:15 - 16:45
+- color: 07b3ac
+  days: Fri
+  name: "Advanced Informatics\nNapol\xE9on Matthieu\n(L105)"
+  time: 08:15 - 09:45
+- color: 07b3ac
+  days: Fri
+  name: 'Advanced Informatics
+
+    Josette Paquin
+
+    (L105)'
+  time: 13:30 - 15:00
+- color: 07b3ac
+  days: Tue
+  name: 'Advanced Informatics
+
+    Josette Paquin
+
+    (L105)'
+  time: 10:00 - 11:30
+- color: 07b3ac
+  days: Sat
   name: 'Advanced Informatics
 
     Maurice Vannier
 
-    (L101)'
+    (L104)'
+  time: 10:00 - 11:30
+- color: 07b3ac
+  days: Thu
+  name: 'Advanced Informatics
+
+    Maurice Vannier
+
+    (AmphiC)'
   time: 18:45 - 20:15
 - color: 07b3ac
-  days: Tue
-  name: 'Advanced Informatics
-
-    Josette Paquin
-
-    (L102)'
-  time: 10:00 - 11:30
-- color: 07b3ac
-  days: Tue
-  name: 'Advanced Informatics
-
-    Maurice Vannier
-
-    (L101)'
+  days: Wed
+  name: "Advanced Informatics\nNapol\xE9on Matthieu\n(L105)"
   time: 13:30 - 15:00
 - color: 07b3ac
-  days: Tue
-  name: "Advanced Informatics\nNapol\xE9on Matthieu\n(L101)"
-  time: 15:15 - 16:45
-- color: 07b3ac
-  days: Tue
-  name: 'Advanced Informatics
-
-    Josette Paquin
-
-    (L102)'
+  days: Fri
+  name: "Advanced Informatics\nNapol\xE9on Matthieu\n(L103)"
   time: 17:00 - 18:30
-- color: 07b3ac
-  days: Wed
-  name: 'Advanced Informatics
-
-    Maurice Vannier
-
-    (L101)'
-  time: 08:15 - 09:45
-- color: 07b3ac
-  days: Wed
-  name: "Advanced Informatics\nNapol\xE9on Matthieu\n(L102)"
-  time: 10:00 - 11:30
-- color: 07b3ac
-  days: Wed
-  name: 'Advanced Informatics
-
-    Maurice Vannier
-
-    (L101)'
-  time: 15:15 - 16:45

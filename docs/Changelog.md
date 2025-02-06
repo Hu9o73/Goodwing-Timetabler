@@ -1,5 +1,20 @@
 # Changelog
 
+## v0.0.6
+
+- Added problem instance generation using an excel file.
+    - Makes things way easier to test different instances !
+- Added live timer while solving the CSP to let the user know the program isn't dead (as it may run for long...)
+- Fixed `noRoomOverlap()` and `noTeacherOverlap()`
+
+## v0.0.5
+
+- Added the ScheduleIntelligence class to build conflict reports and gather intel about our schedule.
+- Added conflicts penalties to handle room and teacher overlaps as soft constraints.
+- Modified `noRoomOverlap()` and `noTeacherOverlap()` to handle these constraints as soft.
+    - Now, if we don't have enough rooms or teachers, we still output a schedule and its conflicts, so someone can hypothetically solve manually !
+- Removed many output debug prints. Added an intelligence report to the console output, with the eventual conflicts.
+
 ## v0.0.4
 
 - Added teachers availability.

@@ -5,6 +5,7 @@
 - Added problem instance generation using an excel file.
     - Makes things way easier to test different instances !
 - Added live timer while solving the CSP to let the user know the program isn't dead (as it may run for long...)
+- Fixed `noRoomOverlap()` and `noTeacherOverlap()`
 
 ## v0.0.5
 

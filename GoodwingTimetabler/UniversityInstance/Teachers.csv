@@ -2,8 +2,10 @@ Idt,First Name,Last Name,Subjects (séparés d'un '-')
 0,Henri,Barbeau,UNI011-UNI021
 1,Timothé,Solé,UNI011-UNI021
 2,Renaud,Cerfbeer,UNI011-UNI021
-3,Christiane,Brunelle,UNI012-UNI022
-4,Constantin,Poussin,UNI012-UNI022
-5,Maurice,Vannier,UNI013-UNI023
-6,Napoléon,Matthieu,UNI013-UNI023
-7,Josette,Paquin,UNI013-UNI023
+3,Achille,Cochet,UNI011-UNI021
+4,Henry,D'Aboville,UNI011-UNI021
+5,Christiane,Brunelle,UNI012-UNI022
+6,Constantin,Poussin,UNI012-UNI022
+7,Maurice,Vannier,UNI013-UNI023
+8,Napoléon,Matthieu,UNI013-UNI023
+9,Josette,Paquin,UNI013-UNI023

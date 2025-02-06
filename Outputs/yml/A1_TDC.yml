@@ -1,69 +1,61 @@
 - color: 0c0fcc
+  days: Sat
+  name: 'Basic Maths
+
+    Henry D''Aboville
+
+    (L105)'
+  time: 10:00 - 11:30
+- color: 0c0fcc
   days: Fri
   name: 'Basic Maths
 
-    Henri Barbeau
+    Henry D''Aboville
 
-    (L101)'
-  time: 13:30 - 15:00
-- color: 0c0fcc
-  days: Thu
-  name: 'Basic Maths
-
-    Henri Barbeau
-
-    (L101)'
-  time: 08:15 - 09:45
-- color: 0c0fcc
-  days: Tue
-  name: 'Basic Maths
-
-    Henri Barbeau
-
-    (L101)'
-  time: 08:15 - 09:45
-- color: 0c0fcc
-  days: Tue
-  name: 'Basic Maths
-
-    Henri Barbeau
-
-    (L101)'
-  time: 10:00 - 11:30
-- color: 9008d4
-  days: Mon
-  name: 'Basic Physics
-
-    Constantin Poussin
-
-    (L101)'
+    (L105)'
   time: 17:00 - 18:30
-- color: 9008d4
-  days: Sat
-  name: 'Basic Physics
+- color: 0c0fcc
+  days: Mon
+  name: 'Basic Maths
 
-    Constantin Poussin
+    Achille Cochet
 
-    (L101)'
+    (L105)'
   time: 10:00 - 11:30
-- color: 9008d4
+- color: 0c0fcc
   days: Tue
+  name: 'Basic Maths
+
+    Achille Cochet
+
+    (L103)'
+  time: 18:45 - 20:15
+- color: 9008d4
+  days: Thu
   name: 'Basic Physics
 
     Constantin Poussin
 
-    (L101)'
+    (L104)'
+  time: 13:30 - 15:00
+- color: 9008d4
+  days: Thu
+  name: 'Basic Physics
+
+    Constantin Poussin
+
+    (L105)'
   time: 17:00 - 18:30
 - color: 9008d4
   days: Wed
   name: 'Basic Physics
 
-    Constantin Poussin
+    Christiane Brunelle
 
-    (L101)'
-  time: 18:45 - 20:15
+    (AmphiC)'
+  time: 15:15 - 16:45
 - color: 9008d4
-  days: Wed
+  days: Fri
   name: 'Basic Physics
 
     Constantin Poussin
@@ -71,42 +63,42 @@
     (L101)'
   time: 13:30 - 15:00
 - color: 9008d4
+  days: Thu
+  name: 'Basic Physics
+
+    Christiane Brunelle
+
+    (AmphiC)'
+  time: 08:15 - 09:45
+- color: 9008d4
   days: Mon
   name: 'Basic Physics
 
-    Constantin Poussin
+    Christiane Brunelle
 
     (L101)'
   time: 18:45 - 20:15
 - color: 05e6de
   days: Sat
-  name: 'Basic Informatics
-
-    Maurice Vannier
-
-    (L101)'
+  name: "Basic Informatics\nNapol\xE9on Matthieu\n(L103)"
   time: 08:15 - 09:45
 - color: 05e6de
-  days: Thu
-  name: 'Basic Informatics
-
-    Maurice Vannier
-
-    (L101)'
-  time: 17:00 - 18:30
-- color: 05e6de
   days: Mon
-  name: 'Basic Informatics
-
-    Maurice Vannier
-
-    (L101)'
+  name: "Basic Informatics\nNapol\xE9on Matthieu\n(L105)"
   time: 13:30 - 15:00
 - color: 05e6de
-  days: Fri
+  days: Wed
   name: 'Basic Informatics
 
     Maurice Vannier
 
-    (L101)'
-  time: 10:00 - 11:30
+    (L105)'
+  time: 17:00 - 18:30
+- color: 05e6de
+  days: Tue
+  name: 'Basic Informatics
+
+    Maurice Vannier
+
+    (L105)'
+  time: 17:00 - 18:30

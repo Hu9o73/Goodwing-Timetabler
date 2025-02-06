@@ -282,25 +282,18 @@ class CSP:
 
         for i in range(len(courses)):
             for j in range(i + 1, len(courses)):
-                # Create a boolean variable for room overlap
-                overlap_var = self.model.NewBoolVar(f'room_overlap_{i}_{j}')
-                
-                # Define room overlap condition
                 same_timeslot = self.model.NewBoolVar(f'same_timeslot_{i}_{j}')
                 self.model.Add(courses[i]['timeslot'] == courses[j]['timeslot']).OnlyEnforceIf(same_timeslot)
                 self.model.Add(courses[i]['timeslot'] != courses[j]['timeslot']).OnlyEnforceIf(same_timeslot.Not())
                 
-                # Room must be different if timeslots are the same
-                room_overlap = self.model.NewBoolVar(f'room_conflict_{i}_{j}')
-                self.model.Add(courses[i]['room'] == courses[j]['room']).OnlyEnforceIf(room_overlap)
-                self.model.Add(courses[i]['room'] != courses[j]['room']).OnlyEnforceIf(room_overlap.Not())
+                same_room = self.model.NewBoolVar(f'same_room_{i}_{j}')
+                self.model.Add(courses[i]['room'] == courses[j]['room']).OnlyEnforceIf(same_room)
+                self.model.Add(courses[i]['room'] != courses[j]['room']).OnlyEnforceIf(same_room.Not())
                 
-                # Combine conditions
-                self.model.Add(room_overlap == 1).OnlyEnforceIf(same_timeslot)
-                
-                # Add conflict penalty
-                conflict_penalty = self.model.NewIntVar(0, 1, f'room_overlap_penalty_{i}_{j}')
-                self.model.Add(conflict_penalty == room_overlap).OnlyEnforceIf(same_timeslot)
+                # Add penalty when same timeslot AND same room
+                conflict_penalty = self.model.NewBoolVar(f'room_conflict_{i}_{j}')
+                self.model.AddBoolAnd([same_timeslot, same_room]).OnlyEnforceIf(conflict_penalty)
+                self.model.AddBoolOr([same_timeslot.Not(), same_room.Not()]).OnlyEnforceIf(conflict_penalty.Not())
                 
                 self.conflict_penalties.append(conflict_penalty)
 
@@ -329,21 +322,18 @@ class CSP:
 
         for i in range(len(courses)):
             for j in range(i + 1, len(courses)):
-                # Similar to room overlap, create penalty variables
                 same_timeslot = self.model.NewBoolVar(f'same_timeslot_teacher_{i}_{j}')
                 self.model.Add(courses[i]['timeslot'] == courses[j]['timeslot']).OnlyEnforceIf(same_timeslot)
                 self.model.Add(courses[i]['timeslot'] != courses[j]['timeslot']).OnlyEnforceIf(same_timeslot.Not())
 
-                teacher_overlap = self.model.NewBoolVar(f'teacher_conflict_{i}_{j}')
-                self.model.Add(courses[i]['teacher'] == courses[j]['teacher']).OnlyEnforceIf(teacher_overlap)
-                self.model.Add(courses[i]['teacher'] != courses[j]['teacher']).OnlyEnforceIf(teacher_overlap.Not())
+                same_teacher = self.model.NewBoolVar(f'same_teacher_{i}_{j}')
+                self.model.Add(courses[i]['teacher'] == courses[j]['teacher']).OnlyEnforceIf(same_teacher)
+                self.model.Add(courses[i]['teacher'] != courses[j]['teacher']).OnlyEnforceIf(same_teacher.Not())
 
-                # Combine conditions
-                self.model.Add(teacher_overlap == 1).OnlyEnforceIf(same_timeslot)
-                
-                # Add conflict penalty
-                conflict_penalty = self.model.NewIntVar(0, 1, f'teacher_overlap_penalty_{i}_{j}')
-                self.model.Add(conflict_penalty == teacher_overlap).OnlyEnforceIf(same_timeslot)
+                # Add penalty when same timeslot AND same teacher
+                conflict_penalty = self.model.NewBoolVar(f'teacher_conflict_{i}_{j}')
+                self.model.AddBoolAnd([same_timeslot, same_teacher]).OnlyEnforceIf(conflict_penalty)
+                self.model.AddBoolOr([same_timeslot.Not(), same_teacher.Not()]).OnlyEnforceIf(conflict_penalty.Not())
                 
                 self.conflict_penalties.append(conflict_penalty)
 

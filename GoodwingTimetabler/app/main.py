@@ -6,5 +6,4 @@ def run_app():
 
 def run_test():
     #generateMockUniversity()
-    util.createCSV()
     generateScheduleUsingCSP()

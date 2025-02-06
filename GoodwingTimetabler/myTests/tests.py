@@ -7,8 +7,10 @@ def generateScheduleUsingCSP():
     print("generateScheduleUsingCSP() running...\n")
 
     # Create the university
-    my_univ = generateUniv("ESILV", dt.date(2025, 1, 6), 7, time_ranges)
-
+    #my_univ = generateUniv("ESILV", dt.date(2025, 1, 6), 7, time_ranges)
+    my_univ = generateUniv2()
+    print("Univ generated successfully : ", my_univ)
+    print("Starting solving the CSP...")
     # Instantiate and solve the CSP
     scheduler = CSP(my_univ)
 

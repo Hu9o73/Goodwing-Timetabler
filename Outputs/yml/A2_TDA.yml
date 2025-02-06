@@ -1,11 +1,19 @@
 - color: 0a0ca3
-  days: Tue
+  days: Mon
   name: 'Advanced Maths
 
     Henri Barbeau
 
     (L101)'
-  time: 10:00 - 11:30
+  time: 15:15 - 16:45
+- color: 0a0ca3
+  days: Wed
+  name: 'Advanced Maths
+
+    Henri Barbeau
+
+    (L101)'
+  time: 17:00 - 18:30
 - color: 0a0ca3
   days: Fri
   name: 'Advanced Maths
@@ -14,14 +22,6 @@
 
     (L101)'
   time: 13:30 - 15:00
-- color: 0a0ca3
-  days: Thu
-  name: 'Advanced Maths
-
-    Henri Barbeau
-
-    (L101)'
-  time: 08:15 - 09:45
 - color: 0a0ca3
   days: Mon
   name: 'Advanced Maths
@@ -37,25 +37,9 @@
     Constantin Poussin
 
     (L101)'
-  time: 15:15 - 16:45
-- color: 55047d
-  days: Thu
-  name: 'Advanced Physics
-
-    Constantin Poussin
-
-    (L101)'
   time: 10:00 - 11:30
 - color: 55047d
   days: Wed
-  name: 'Advanced Physics
-
-    Constantin Poussin
-
-    (L101)'
-  time: 18:45 - 20:15
-- color: 55047d
-  days: Thu
   name: 'Advanced Physics
 
     Constantin Poussin
@@ -69,7 +53,15 @@
     Constantin Poussin
 
     (L101)'
-  time: 18:45 - 20:15
+  time: 17:00 - 18:30
+- color: 55047d
+  days: Sat
+  name: 'Advanced Physics
+
+    Constantin Poussin
+
+    (L101)'
+  time: 10:00 - 11:30
 - color: 55047d
   days: Wed
   name: 'Advanced Physics
@@ -77,17 +69,17 @@
     Constantin Poussin
 
     (L101)'
-  time: 08:15 - 09:45
-- color: 07b3ac
-  days: Fri
-  name: 'Advanced Informatics
+  time: 15:15 - 16:45
+- color: 55047d
+  days: Tue
+  name: 'Advanced Physics
 
-    Maurice Vannier
+    Constantin Poussin
 
     (L101)'
-  time: 10:00 - 11:30
+  time: 17:00 - 18:30
 - color: 07b3ac
-  days: Fri
+  days: Tue
   name: 'Advanced Informatics
 
     Maurice Vannier
@@ -95,29 +87,13 @@
     (L101)'
   time: 15:15 - 16:45
 - color: 07b3ac
-  days: Tue
+  days: Thu
   name: 'Advanced Informatics
 
     Maurice Vannier
 
     (L101)'
   time: 18:45 - 20:15
-- color: 07b3ac
-  days: Wed
-  name: 'Advanced Informatics
-
-    Maurice Vannier
-
-    (L101)'
-  time: 10:00 - 11:30
-- color: 07b3ac
-  days: Tue
-  name: 'Advanced Informatics
-
-    Maurice Vannier
-
-    (L101)'
-  time: 15:15 - 16:45
 - color: 07b3ac
   days: Thu
   name: 'Advanced Informatics
@@ -127,7 +103,31 @@
     (L101)'
   time: 17:00 - 18:30
 - color: 07b3ac
-  days: Thu
+  days: Sat
+  name: 'Advanced Informatics
+
+    Maurice Vannier
+
+    (L101)'
+  time: 08:15 - 09:45
+- color: 07b3ac
+  days: Mon
+  name: 'Advanced Informatics
+
+    Maurice Vannier
+
+    (L101)'
+  time: 13:30 - 15:00
+- color: 07b3ac
+  days: Fri
+  name: 'Advanced Informatics
+
+    Maurice Vannier
+
+    (L101)'
+  time: 17:00 - 18:30
+- color: 07b3ac
+  days: Tue
   name: 'Advanced Informatics
 
     Maurice Vannier
@@ -141,4 +141,4 @@
     Maurice Vannier
 
     (L101)'
-  time: 18:45 - 20:15
+  time: 08:15 - 09:45

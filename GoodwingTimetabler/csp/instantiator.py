@@ -1,6 +1,90 @@
 # File to instantiate a university and a schedule with courses
-
 from .objects import *
+import pandas as pd
+from collections import defaultdict
+
+def generateUniv2(gen_dir:str = './GoodwingTimetabler/UniversityInstance/'):
+    from util import createCSV
+    createCSV()
+
+    # Getting the general info
+    uniCSV = pd.read_csv(gen_dir+'University.csv', sep=',')
+    name = uniCSV["Value"][0]
+    start_date = dt.date(int(uniCSV["Value"][3]), int(uniCSV["Value"][2]), int(uniCSV["Value"][1]))
+    days = int(uniCSV["Value"][4])
+
+    # Getting the values for the rooms
+    roomsCSV = pd.read_csv(gen_dir+'Rooms.csv', sep=',')
+    rooms = []
+    for _, row in roomsCSV.iterrows():
+        rooms.append(Room(row["Name"], row["Type"]))
+
+    # Getting the values for the subjects
+    subjectsCSV = pd.read_csv(gen_dir + 'Subjects.csv', sep=',')
+    subjects = []
+    for idx, row in subjectsCSV.iterrows():
+        subjects.append([row["Id"], row["Promotion"], Subject(row["Name"], row["Id"], row["Hours"], row["Color"])])
+    
+    promotion_dict = defaultdict(list)                  # Dictionary to group subjects by promotion
+    for uni, promotion, subject in subjects:            # Populate dictionary
+        promotion_dict[promotion].append(subject)
+    ordered_subjects = list(promotion_dict.values())    # Convert dictionary values to a list of lists
+
+
+    # Getting the values for the promotions
+    promotionsCSV = pd.read_csv(gen_dir+'Promotions.csv', sep=',')
+    groups_names = []
+    promo_names = []
+    for col in promotionsCSV.columns:
+        non_null_values = promotionsCSV[col].dropna().tolist()  # Remove NaN values
+        if non_null_values:  # Only add if there are valid values
+            groups_names.append([col + '_' + val for val in non_null_values])
+            promo_names.append(col)
+
+    groups = []
+
+    # Creating groups from filtered data
+    for promo in groups_names:
+        group_list = [Group(group_name) for group_name in promo]  # Create only valid groups
+        groups.append(group_list)
+
+    promotions = []
+    for idx, promo_name in enumerate(promo_names):
+        promotions.append(Promotion(promo_name, groups[idx], ordered_subjects[idx]))
+
+
+    def get_subject_by_id(data: pd.DataFrame, target_id: str) -> Subject:
+        for subject in data:
+            if subject[0] == target_id:
+                return subject[2]
+        return None   
+
+    # Getting the values for the teachers
+    teachersCSV = pd.read_csv(gen_dir + 'Teachers.csv', sep=',')
+    teachers = []
+    for idx, row in teachersCSV.iterrows():
+        teacher_subjects_id = row["Subjects (séparés d'un '-')"].split('-')
+        teacher_subjects = []
+        for id in teacher_subjects_id:
+            teacher_subjects.append(get_subject_by_id(subjects, id))
+
+        teacher_availability = [i for i in range(100)]
+        teachers.append(Teacher(row["First Name"], row["Last Name"], teacher_subjects, teacher_availability))
+
+    # Getting the timeslots
+    timeslotsCSV = pd.read_csv(gen_dir + 'Timeslots.csv')
+    time_ranges = []
+    for idx, row in timeslotsCSV.iterrows():
+        time_ranges.append((dt.time(row["StartH"], row["StartMin"]), dt.time(row["EndH"], row["EndMin"])))
+
+    my_univ = University(name, rooms, teachers, promotions, start_date, days, time_ranges)
+
+    return my_univ
+        
+    
+
+
+
 
 def generateUniv(name: str, start_date: dt.date, days: int, timeslots: List[tuple]):
     """

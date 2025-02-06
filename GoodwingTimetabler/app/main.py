@@ -1,8 +1,8 @@
-from util import hello_world
+import util
 from myTests import generateScheduleUsingCSP
 
 def run_app():
-    hello_world()
+    util.hello_world()
 
 def run_test():
     #generateMockUniversity()

@@ -190,17 +190,21 @@ class CSP:
         self.variables = {}  # Dictionary to store variables for each course
         self.generated_courses: List[Course] = []  # List of all generated courses
         self.solver = cp_model.CpSolver()
-        self.chronometer = ChronometerCallback()
+        self.chronometer = None
 
         # Store objective terms
         self.gap_penalties = []  # For storing gap penalties
         self.balance_penalties = []  # For storing balance penalties
         self.conflict_penalties = []  # For storing conflict penalties
 
+        print("Generating the variables...")
         self.createVariables()
+        print("Created the variables.")
         #self.printVariables()
+        print("Creating the constraints...")
         self.createConstraints()
         self.createSoftConstraints()
+        print("Created the constraints")
         self.solveCSP()
 
     def createVariables(self):
@@ -250,14 +254,21 @@ class CSP:
 
 
     def createConstraints(self):
+        print(" - Room overlaps ...")
         self.noRoomOverlap()
+        print(" - Courses overlaps ...")
         self.noMultipleCoursesOnTimeslotForGroup()
+        print(" - Teacher overlaps ...")
         self.noTeacherOverlap()
+        print(" - Teacher availability ...")
         self.teacherAvailabilityConstraint()
+        print(" - Lunch break ...")
         self.ensureLunchBreak()
+        print(" - Weekends restrictions ...")
         self.restrictWeekendTimeslots()
 
     def createSoftConstraints(self):
+        print("Balanced courses ...")
         # Balance courses across days
         self.balanceCoursesAcrossDays()
         
@@ -281,6 +292,7 @@ class CSP:
                     courses.append(course)
 
         for i in range(len(courses)):
+            print(f" - - Course {i}/{len(courses)}", end="\r")
             for j in range(i + 1, len(courses)):
                 same_timeslot = self.model.NewBoolVar(f'same_timeslot_{i}_{j}')
                 self.model.Add(courses[i]['timeslot'] == courses[j]['timeslot']).OnlyEnforceIf(same_timeslot)
@@ -307,6 +319,7 @@ class CSP:
                     courses.append(course)
 
         for i in range(len(courses)):
+            print(f" - - Course {i}/{len(courses)}", end="\r")
             for j in range(i + 1, len(courses)):
                 # Check if the groups are the same
                 if courses[i]['group'] == courses[j]['group']:
@@ -321,6 +334,7 @@ class CSP:
                     courses.append(course)
 
         for i in range(len(courses)):
+            print(f" - - Course {i}/{len(courses)}", end="\r")
             for j in range(i + 1, len(courses)):
                 same_timeslot = self.model.NewBoolVar(f'same_timeslot_teacher_{i}_{j}')
                 self.model.Add(courses[i]['timeslot'] == courses[j]['timeslot']).OnlyEnforceIf(same_timeslot)
@@ -347,7 +361,8 @@ class CSP:
                 for _, course in subject.items():
                     courses.append(course)
 
-        for course in courses:
+        for k, course in enumerate(courses):
+            print(f" - - Course {k}/{len(courses)}", end="\r")
             teacher_var = course['teacher']
             timeslot_var = course['timeslot']
             
@@ -391,9 +406,10 @@ class CSP:
 
     def restrictWeekendTimeslots(self):
         """
-        Ensures no courses are scheduled:
-        - After the 3rd timeslot on Saturday (timeslots 3-6 of day 5)
-        - All day Sunday (timeslots 0-6 of day 6)
+        Ensures no courses are scheduled during weekend slots:
+        - After the 3rd timeslot on Saturday (timeslots 3-6 of each Saturday)
+        - All day Sunday (timeslots 0-6 of each Sunday)
+        Works for any week in the schedule.
         """
         # Get all courses from all groups
         all_courses = []
@@ -405,18 +421,43 @@ class CSP:
         for course in all_courses:
             timeslot_var = course['timeslot']
             
-            # Calculate forbidden timeslots
-            # Saturday afternoon (day 5, timeslots 3-6)
-            saturday_forbidden = list(range(5 * 7 + 3, 5 * 7 + 7))  # Timeslots 38-41
-            # All Sunday (day 6, timeslots 0-6)
-            sunday_forbidden = list(range(6 * 7, 6 * 7 + 7))    # Timeslots 42-48
+            # Create intermediate variables for the modulo operations
+            week_day = self.model.NewIntVar(0, 6, f'week_day_{id(course)}')  # 0-6 for days of week
+            day_slot = self.model.NewIntVar(0, 6, f'day_slot_{id(course)}')  # 0-6 for slots within day
             
-            # Combine all forbidden timeslots
-            forbidden_timeslots = saturday_forbidden + sunday_forbidden
+            # timeslot_var = week * 49 + day * 7 + slot
+            # Use AddModuloEquality for both operations
+            # First get the slot within the day
+            self.model.AddModuloEquality(day_slot, timeslot_var, 7)
             
-            # Add constraint to prevent scheduling in these timeslots
-            for forbidden_ts in forbidden_timeslots:
-                self.model.Add(timeslot_var != forbidden_ts)
+            # Then get the day of week (after dividing by 7)
+            timeslot_div_7 = self.model.NewIntVar(0, 1000, f'timeslot_div_7_{id(course)}')  # Adjust range as needed
+            self.model.AddDivisionEquality(timeslot_div_7, timeslot_var, 7)
+            self.model.AddModuloEquality(week_day, timeslot_div_7, 7)
+            
+            # Create constraints for Saturday afternoon (day 5, slots 3-6)
+            is_saturday = self.model.NewBoolVar(f'is_saturday_{id(course)}')
+            is_afternoon = self.model.NewBoolVar(f'is_afternoon_{id(course)}')
+            
+            self.model.Add(week_day == 5).OnlyEnforceIf(is_saturday)
+            self.model.Add(week_day != 5).OnlyEnforceIf(is_saturday.Not())
+            
+            self.model.Add(day_slot >= 3).OnlyEnforceIf(is_afternoon)
+            self.model.Add(day_slot < 3).OnlyEnforceIf(is_afternoon.Not())
+            
+            # If both conditions are true, this is a Saturday afternoon slot
+            is_saturday_afternoon = self.model.NewBoolVar(f'is_saturday_afternoon_{id(course)}')
+            self.model.AddBoolAnd([is_saturday, is_afternoon]).OnlyEnforceIf(is_saturday_afternoon)
+            self.model.AddBoolOr([is_saturday.Not(), is_afternoon.Not()]).OnlyEnforceIf(is_saturday_afternoon.Not())
+            
+            # Create constraint for Sunday (day 6)
+            is_sunday = self.model.NewBoolVar(f'is_sunday_{id(course)}')
+            self.model.Add(week_day == 6).OnlyEnforceIf(is_sunday)
+            self.model.Add(week_day != 6).OnlyEnforceIf(is_sunday.Not())
+            
+            # Forbid both Saturday afternoon and Sunday slots
+            self.model.Add(is_saturday_afternoon == 0)
+            self.model.Add(is_sunday == 0)
 
     def balanceCoursesAcrossDays(self):
         # Process each group separately
@@ -510,9 +551,13 @@ class CSP:
         start_time = time.time()
 
         # Configure solver for flexibility
-        self.solver.parameters.num_search_workers = 4
-        self.solver.parameters.max_time_in_seconds = 60.0
+        import multiprocessing
+        self.solver.parameters.num_search_workers = int(multiprocessing.cpu_count()/2)
+        print(f"Using {int(multiprocessing.cpu_count()/2)} cores")
+        self.solver.parameters.max_time_in_seconds = int(input("How many seconds should the solver run for (max):\n"))
 
+        print(f"\nInstance generated, solving the CSP...")
+        self.chronometer = ChronometerCallback()
         status = self.solver.Solve(self.model, self.chronometer)
         self.chronometer.running = False
 
@@ -537,7 +582,7 @@ class CSP:
                 import traceback
                 traceback.print_exc()
         else:
-            print("No complete solution found. Analyzing partial results...")
+            print("No complete solution found. Please retry giving the CSP more time !")
         
         print(f"Computational time: {round((time.time()-start_time),3)} s")
 

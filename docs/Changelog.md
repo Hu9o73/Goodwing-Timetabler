@@ -1,5 +1,15 @@
 # Changelog
 
+## v0.1.0
+
+- First fully usable user-friendly version !
+- Added the ExcelScheduleManager to create the new output file.
+- Changed the output to be an Excel file (easier to read !) containing:
+    - Group schedules
+    - Teacher schedules
+    - Room schedules
+- Fixed the Teacher Availability function to work for schedules of more than 7 days.
+
 ## v0.0.6
 
 - Added problem instance generation using an excel file.

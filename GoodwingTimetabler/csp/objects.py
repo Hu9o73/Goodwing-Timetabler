@@ -217,7 +217,9 @@ class University:
         self.teachers = teachers
         self.promotions = promotions
         self.timeslots: List[Timeslot] = generate_timeslots(start_date, days, time_ranges)
-        
+        self.days = days
+        self.time_ranges = time_ranges
+
         start_time = self.timeslots[0].start
         end_time = self.timeslots[0].end
 

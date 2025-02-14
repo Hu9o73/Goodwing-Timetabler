@@ -68,7 +68,7 @@ def generateUniv2(gen_dir:str = './GoodwingTimetabler/UniversityInstance/'):
         for id in teacher_subjects_id:
             teacher_subjects.append(get_subject_by_id(subjects, id))
 
-        teacher_availability = [i for i in range(100)]
+        teacher_availability = [i for i in range(2555)]
         teachers.append(Teacher(row["First Name"], row["Last Name"], teacher_subjects, teacher_availability))
 
     # Getting the timeslots

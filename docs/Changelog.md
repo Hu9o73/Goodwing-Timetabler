@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.1.1
+
+- Heavily optimized the `teacherAvailabilityConstraint()` function. Reduced the problem's instantiation time.
+
 ## v0.1.0
 
 - First fully usable user-friendly version !

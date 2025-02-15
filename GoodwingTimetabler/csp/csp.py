@@ -388,21 +388,24 @@ class CSP:
                     self.model.AddBoolOr(timeslot_bools).OnlyEnforceIf(is_selected)
 
     def ensureLunchBreak(self):
-        # Loop through all courses in the model
+        """Ensures that each group has a lunch break at either the 3rd (id 2) or 4th (id 3) timeslot of each day."""
+        num_days = len(self.university.timeslots) // 7  # Assuming 7 timeslots per day
+
         for group_name, subjects in self.variables.items():
-            for subject_name, subject_courses in subjects.items():
-                for course_idx, course in subject_courses.items():
-                    timeslot_var = course['timeslot']
-                    
-                    # Define the lunch break timeslot indices: index % 7 == 2 (Corresponding to 11:30 -> 13:15)
-                    lunch_break_timeslots = [index for index, _ in enumerate(self.university.timeslots) if index % 7 == 2]
-                    
-                    # Add a constraint that the timeslot should not be any of the lunch break timeslots
-                    self.model.Add(timeslot_var != lunch_break_timeslots[0])
-                    
-                    # Loop through all the lunch break timeslots to enforce no assignment for any of them
-                    for lunch_slot in lunch_break_timeslots[1:]:
-                        self.model.Add(timeslot_var != lunch_slot)
+            # Binary decision variable per group: 1 = lunch at timeslot 2, 0 = lunch at timeslot 3
+            lunch_slot_decision = self.model.NewBoolVar(f"lunch_slot_{group_name}")
+
+            for day in range(num_days):
+                lunch_timeslot_1 = day * 7 + 2  # 3rd timeslot (id 2)
+                lunch_timeslot_2 = day * 7 + 3  # 4th timeslot (id 3)
+
+                for subject_courses in subjects.values():
+                    for course_idx, course in subject_courses.items():
+                        timeslot_var = course["timeslot"]
+
+                        # Enforce the chosen lunch break timeslot constraint per group
+                        self.model.Add(timeslot_var != lunch_timeslot_1).OnlyEnforceIf(lunch_slot_decision.Not())
+                        self.model.Add(timeslot_var != lunch_timeslot_2).OnlyEnforceIf(lunch_slot_decision)
 
     def restrictWeekendTimeslots(self):
         """

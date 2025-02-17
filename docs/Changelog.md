@@ -1,5 +1,14 @@
 # Changelog
 
+## v0.1.1
+
+- Heavily optimized the `teacherAvailabilityConstraint()` function. Reduced the problem's instantiation time.
+- Time reducton on the same instance of the problem\* for v0.1.0 and v0.1.1 :
+    - Instantiation time reduced by 95%.
+    - Computation time reduced by 47% on average.
+
+- \* *Excel generation file available in commit `c684ef4` (corresponding to v0.1.1). Averages of tests on 5 runs.* 
+
 ## v0.1.0
 
 - First fully usable user-friendly version !

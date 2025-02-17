@@ -4,6 +4,7 @@ import yaml # Nested dictionnary pretty print purposes
 import time
 import sys
 import threading
+from itertools import combinations
 
 # Schedule Intel imports
 from collections import defaultdict
@@ -365,27 +366,14 @@ class CSP:
             print(f" - - Course {k}/{len(courses)}", end="\r")
             teacher_var = course['teacher']
             timeslot_var = course['timeslot']
-            
+
             # For each potential teacher
             for teacher_idx, teacher in enumerate(self.university.teachers):
                 if hasattr(teacher, 'available_slots') and teacher.available_slots:
-                    # Create a boolean variable for when this teacher is selected
-                    is_selected = self.model.NewBoolVar(f'teacher_{teacher_idx}_available_for_{id(course)}')
-                    
-                    # Link the boolean to the teacher assignment
-                    self.model.Add(teacher_var == teacher_idx).OnlyEnforceIf(is_selected)
-                    self.model.Add(teacher_var != teacher_idx).OnlyEnforceIf(is_selected.Not())
-                    
-                    # Create a boolean variable for each available timeslot
-                    timeslot_bools = []
-                    for ts_idx in teacher.available_slots:
-                        is_timeslot = self.model.NewBoolVar(f'is_timeslot_{ts_idx}_for_{id(course)}')
-                        self.model.Add(timeslot_var == ts_idx).OnlyEnforceIf(is_timeslot)
-                        self.model.Add(timeslot_var != ts_idx).OnlyEnforceIf(is_timeslot.Not())
-                        timeslot_bools.append(is_timeslot)
-                    
-                    # If this teacher is selected, the timeslot MUST be one of their available slots
-                    self.model.AddBoolOr(timeslot_bools).OnlyEnforceIf(is_selected)
+                    # Directly enforce that if a teacher is selected, the timeslot must be in their available slots
+                    for ts_idx in range(len(self.university.timeslots)):
+                        if ts_idx not in teacher.available_slots:
+                            self.model.AddImplication(teacher_var == teacher_idx, timeslot_var != ts_idx)
 
     def ensureLunchBreak(self):
         # Loop through all courses in the model

@@ -1,8 +1,22 @@
 # Changelog
 
+## v0.1.2
+
+- The terminal output specifies if the solution is optimal or not.
+- Optimized the `noRoomOverlap()` function.
+- v0.1.1 and prior versions created O(n²) boolean variables (where n is the number of courses)
+- The optimized version creates only O(n × r) variables where r is the number of rooms
+    - For a schedule with 100 courses and 10 rooms, this reduces from ~10,000 variables to ~1,000 variables
+
 ## v0.1.1
 
 - Heavily optimized the `teacherAvailabilityConstraint()` function. Reduced the problem's instantiation time.
+    - Uses direct domain restrictions instead of multiple boolean variables
+    - Handles the constraints at the teacher selection level rather than the timeslot level
+    - Reduces the number of constraints from O(n * m * t) to O(n * t) where:
+        - n = number of courses
+        - m = number of timeslots
+        - t = number of teachers
 - Time reducton on the same instance of the problem\* for v0.1.0 and v0.1.1 :
     - Instantiation time reduced by 95%.
     - Computation time reduced by 47% on average.

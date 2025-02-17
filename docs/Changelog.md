@@ -1,5 +1,16 @@
 # Changelog
 
+## v0.1.3
+
+- Added the opportunity to stop the solving process when the first feasible solution is found.
+    - This means:
+        - No room conflict
+        - No teacher conflict
+    - Giving more time to the CSP will make it minimize the schedule balance. For instance:
+        - First feasible solution might set all courses to take place on the first two weeks
+        - An optimized (and thus more balanbced) solution will have its courses spread across the available timeslots.
+- Fixed the solver overshooting its solving-time limit.
+
 ## v0.1.2
 
 - The terminal output specifies if the solution is optimal or not.
@@ -7,6 +18,11 @@
 - v0.1.1 and prior versions created O(n²) boolean variables (where n is the number of courses)
 - The optimized version creates only O(n × r) variables where r is the number of rooms
     - For a schedule with 100 courses and 10 rooms, this reduces from ~10,000 variables to ~1,000 variables
+- Time reducton on the same instance of the problem\* (To obtain a feasible solution) for v0.1.1 and v0.1.2 :
+    - Instantiation time further reduced by 50%.
+        - \- 97% since v0.1.0
+    - Computation time futher reduced by 67% on average.
+        - \- 83% since v0.1.0
 
 ## v0.1.1
 
@@ -17,11 +33,11 @@
         - n = number of courses
         - m = number of timeslots
         - t = number of teachers
-- Time reducton on the same instance of the problem\* for v0.1.0 and v0.1.1 :
+- Time reducton on the same instance of the problem\* (To obtain a feasible solution) for v0.1.0 and v0.1.1 :
     - Instantiation time reduced by 95%.
     - Computation time reduced by 47% on average.
 
-- \* *Excel generation file available in commit `c684ef4` (corresponding to v0.1.1). Averages of tests on 5 runs.* 
+- \* *Excel generation file available in commit `c684ef4` (corresponding to v0.1.1). Averages of tests on 5 runs. Feasible solution is guaranteed.* 
 
 ## v0.1.0
 

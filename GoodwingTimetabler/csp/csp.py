@@ -11,32 +11,75 @@ from collections import defaultdict
 from typing import Dict, List, Any
 
 class ChronometerCallback(cp_model.CpSolverSolutionCallback):
-    def __init__(self):
+    def __init__(self, model, conflict_penalties):
         super().__init__()
         self.start_time = time.time()
         self.running = True
-        self.thread = threading.Thread(target=self.update_timer, daemon=True)  # Daemon thread to auto-stop
+        self.paused = False
+        self.pause_time = 0
+        self.accumulated_pause_time = 0
+        self.thread = threading.Thread(target=self.update_timer, daemon=True)
         self.thread.start()
+        self.model = model
+        self.conflict_penalties = conflict_penalties
+        self.found_feasible = False
+        self.continue_search = True
 
     def update_timer(self):
         """Continuously update elapsed time every second until stopped."""
         while self.running:
-            elapsed = time.time() - self.start_time
-            sys.stdout.write(f"\rElapsed time: {elapsed:.2f} s")
-            sys.stdout.flush()
+            if not self.paused:
+                elapsed = time.time() - self.start_time - self.accumulated_pause_time
+                sys.stdout.write(f"\rElapsed time: {elapsed:.2f} s")
+                sys.stdout.flush()
             time.sleep(1)  # Update every second
+
+    def pause_chronometer(self):
+        """Pause the chronometer."""
+        if not self.paused:
+            self.paused = True
+            self.pause_time = time.time()
+
+    def resume_chronometer(self):
+        """Resume the chronometer."""
+        if self.paused:
+            self.accumulated_pause_time += time.time() - self.pause_time
+            self.paused = False
 
     def OnSolutionCallback(self):
         """Update elapsed time when a solution is found."""
-        elapsed = time.time() - self.start_time
-        sys.stdout.write(f"\rElapsed time: {elapsed:.2f} s")
-        sys.stdout.flush()
+        if not self.paused:
+            elapsed = time.time() - self.start_time - self.accumulated_pause_time
+            sys.stdout.write(f"\rElapsed time: {elapsed:.2f} s")
+            sys.stdout.flush()
+        
+        # Check if this solution has no conflicts
+        has_conflicts = False
+        for penalty in self.conflict_penalties:
+            if isinstance(penalty, cp_model.IntVar):
+                if self.Value(penalty) > 0:
+                    has_conflicts = True
+                    break
+            elif isinstance(penalty, cp_model.BoolVar):
+                if self.Value(penalty):
+                    has_conflicts = True
+                    break
+        
+        if not has_conflicts and not self.found_feasible:
+            self.found_feasible = True
+            self.pause_chronometer()
+            print("\nFound a feasible solution without conflicts!")
+            user_input = input("Stop search and use this solution? (y/n): ")
+            if user_input.lower() == 'y':
+                self.continue_search = False
+                self.StopSearch()
+            self.resume_chronometer()
 
     def EndSearch(self):
         """Stop the chronometer and ensure the final time is displayed."""
         self.running = False  # Stop the loop
         self.thread.join(timeout=1)  # Ensure the thread stops (with a small timeout)
-        elapsed = time.time() - self.start_time
+        elapsed = time.time() - self.start_time - self.accumulated_pause_time
         print(f"\nTotal solving time: {elapsed:.2f} s")
 
 class ScheduleIntelligence:
@@ -574,15 +617,16 @@ class CSP:
         import multiprocessing
         self.solver.parameters.num_search_workers = int(multiprocessing.cpu_count()/2)
         print(f"Using {int(multiprocessing.cpu_count()/2)} cores")
-        self.solver.parameters.max_time_in_seconds = int(input("How many seconds should the solver run for (max):\n"))
+        max_time = int(input("How many seconds should the solver run for (max):\n"))
+        self.solver.parameters.max_time_in_seconds = max_time
 
         print(f"\nInstance generated, solving the CSP...")
-        self.chronometer = ChronometerCallback()
+        self.chronometer = ChronometerCallback(self.model, self.conflict_penalties)
         status = self.solver.Solve(self.model, self.chronometer)
         self.chronometer.running = False
 
         if status == cp_model.FEASIBLE or status == cp_model.OPTIMAL:
-            if(status==cp_model.OPTIMAL):
+            if status == cp_model.OPTIMAL:
                 print("\nOptimal solution found:")
             else:
                 print("\nSub-optimal feasible solution found:")            

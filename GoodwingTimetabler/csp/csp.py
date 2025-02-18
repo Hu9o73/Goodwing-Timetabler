@@ -312,7 +312,7 @@ class CSP:
         self.restrictWeekendTimeslots()
 
     def createSoftConstraints(self):
-        print("Balanced courses ...")
+        print(" - Balanced courses ...")
         # Balance courses across days
         self.balanceCoursesAcrossDays()
         
@@ -329,56 +329,30 @@ class CSP:
             self.model.Minimize(total_cost)
 
     def noRoomOverlap(self):
-        """
-        Optimized room overlap constraints using NoOverlap global constraint.
-        """
-        # 1. Group courses by room to reduce the number of comparisons
-        room_to_courses = defaultdict(list)
-        all_courses = []
-        
-        # Collect all courses and organize them by potential room
-        course_index = 0
-        for group in self.variables.values():
-            for subject in group.values():
-                for course in subject.values():
-                    all_courses.append((course_index, course))
-                    course_index += 1
-        
-        # 2. For each room, create an optional interval for each course that might use it
-        n_rooms = len(self.university.rooms)
-        for room_idx in range(n_rooms):
-            intervals_for_room = []
-            print(f" - - Room {room_idx+1}/{n_rooms}", end="\r")
-            
-            for course_idx, course in all_courses:
-                # Create a boolean variable indicating if this course is in this room
-                is_in_room = self.model.NewBoolVar(f'course_{course_idx}_in_room_{room_idx}')
+        courses = []
+        for _, group in self.variables.items():
+            for _, subject in group.items():
+                for course_key, course in subject.items():
+                    courses.append(course)
+
+        for i in range(len(courses)):
+            print(f" - - Course {i+1}/{len(courses)}", end="\r")
+            for j in range(i + 1, len(courses)):
+                same_timeslot = self.model.NewBoolVar(f'same_timeslot_{i}_{j}')
+                self.model.Add(courses[i]['timeslot'] == courses[j]['timeslot']).OnlyEnforceIf(same_timeslot)
+                self.model.Add(courses[i]['timeslot'] != courses[j]['timeslot']).OnlyEnforceIf(same_timeslot.Not())
                 
-                # Link this boolean to the room assignment
-                self.model.Add(course['room'] == room_idx).OnlyEnforceIf(is_in_room)
-                self.model.Add(course['room'] != room_idx).OnlyEnforceIf(is_in_room.Not())
+                same_room = self.model.NewBoolVar(f'same_room_{i}_{j}')
+                self.model.Add(courses[i]['room'] == courses[j]['room']).OnlyEnforceIf(same_room)
+                self.model.Add(courses[i]['room'] != courses[j]['room']).OnlyEnforceIf(same_room.Not())
                 
-                # Create an optional interval variable for this course in this room
-                # The interval spans just one timeslot (duration = 1)
-                optional_interval = self.model.NewOptionalIntervalVar(
-                    course['timeslot'],  # start
-                    1,                   # duration (1 timeslot)
-                    course['timeslot'] + 1,  # end (start + duration)
-                    is_in_room,          # is_present literal
-                    f'course_{course_idx}_room_{room_idx}_interval'
-                )
+                # Add penalty when same timeslot AND same room
+                conflict_penalty = self.model.NewBoolVar(f'room_conflict_{i}_{j}')
+                self.model.AddBoolAnd([same_timeslot, same_room]).OnlyEnforceIf(conflict_penalty)
+                self.model.AddBoolOr([same_timeslot.Not(), same_room.Not()]).OnlyEnforceIf(conflict_penalty.Not())
                 
-                intervals_for_room.append(optional_interval)
-            
-            # 3. Add a NoOverlap constraint for each room
-            if intervals_for_room:  # Only add constraint if there are potential intervals
-                self.model.AddNoOverlap(intervals_for_room)
+                self.conflict_penalties.append(conflict_penalty)
         print("")
-        # 4. For completeness, add a counter to track total conflicts across all rooms
-        # This is useful if you want to minimize conflicts rather than eliminating them completely
-        total_conflicts = self.model.NewIntVar(0, len(all_courses) * (len(all_courses) - 1) // 2, 'total_room_conflicts')
-        self.model.Add(total_conflicts == 0)  # Ensure no conflicts
-        self.conflict_penalties.append(total_conflicts)  # Add to penalties
 
     def noMultipleCoursesOnTimeslotForGroup(self):
         courses = []
@@ -633,10 +607,10 @@ class CSP:
             self.variablesToCourses()
             
             # Print course assignments (debug)
-            for _, courses in self.variables.items():
-                for _, course in courses.items():
-                    for _, details in course.items():
-                        print(f"{details['subject']} | Timeslot: {self.solver.Value(details['timeslot'])} | Room: {self.solver.Value(details['room'])}")
+            #for _, courses in self.variables.items():
+            #    for _, course in courses.items():
+            #        for _, details in course.items():
+            #            print(f"{details['subject']} | Timeslot: {self.solver.Value(details['timeslot'])} | Room: {self.solver.Value(details['room'])}")
             
             # Perform schedule intelligence analysis
             try:

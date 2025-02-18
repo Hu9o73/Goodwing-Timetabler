@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.1.4
+
+- Added a Logo to the project.
+- Reverted changes done to `noRoomOverlap()` in `v0.1.2` as it turned the constraint to hard, we want it soft !
+    - Took the function from `v0.1.1`
+
 ## v0.1.3
 
 - Added the opportunity to stop the solving process when the first feasible solution is found.
@@ -14,15 +20,7 @@
 ## v0.1.2
 
 - The terminal output specifies if the solution is optimal or not.
-- Optimized the `noRoomOverlap()` function.
-- v0.1.1 and prior versions created O(n²) boolean variables (where n is the number of courses)
-- The optimized version creates only O(n × r) variables where r is the number of rooms
-    - For a schedule with 100 courses and 10 rooms, this reduces from ~10,000 variables to ~1,000 variables
-- Time reducton on the same instance of the problem\* (To obtain a feasible solution) for v0.1.1 and v0.1.2 :
-    - Instantiation time further reduced by 50%.
-        - \- 97% since v0.1.0
-    - Computation time futher reduced by 67% on average.
-        - \- 83% since v0.1.0
+- Optimized the `noRoomOverlap()` function. *(Bugged ! Fixed in `v0.1.4`)*
 
 ## v0.1.1
 
@@ -33,7 +31,7 @@
         - n = number of courses
         - m = number of timeslots
         - t = number of teachers
-- Time reducton on the same instance of the problem\* (To obtain a feasible solution) for v0.1.0 and v0.1.1 :
+- Time reducton on the same instance of the problem\* (To obtain a feasible solution) from v0.1.0 to v0.1.1 :
     - Instantiation time reduced by 95%.
     - Computation time reduced by 47% on average.
 

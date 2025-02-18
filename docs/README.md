@@ -1,4 +1,6 @@
-﻿# :calendar: Goodwing Timetabler :calendar: | v 0.1.3
+![Logo](./Images/Logos/Logo_v1_blanc.png)
+ 
+# Goodwing Timetabler | v 0.1.3
 
 ## The Timetabling Problem, briefly
 

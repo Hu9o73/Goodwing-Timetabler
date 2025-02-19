@@ -1,6 +1,6 @@
 ![Logo](./Images/Logos/Logo_v1_blanc.png)
  
-# Goodwing Timetabler | v 0.1.3
+# Goodwing Timetabler | v 0.1.5
 
 ## The Timetabling Problem, briefly
 
@@ -22,6 +22,8 @@ The app runs with Python. Go inside the repo's folder in your terminal and, ensu
 `python .\GoodwingTimetabler`
 
 Wait for the problem to generate, set a max time limit for the solver to do its job and once the problem is solved, you'll find your solution inside the `Outputs\excel\schedule.xlsx` file, alongisde the Schedule Intelligence report in the console (overlaps).
+
+You can also run `pytest -s` to test the algorithm's performances (takes time).
 
 Sidenote: The CSP is poorly optimized at the moment (this is being taken care of !). Don't try to generate HUGE instances if your computer doesn't have a good enough CPU and RAM.
 

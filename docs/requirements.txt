@@ -1,4 +1,10 @@
+ortools
 openpyxl
 pandas
 tabulate
 openpyxl
+pytest
+pytest-benchmark
+psutil
+pyyaml
+matplotlib

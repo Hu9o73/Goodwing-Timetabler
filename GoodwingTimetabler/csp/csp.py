@@ -4,14 +4,15 @@ import yaml # Nested dictionnary pretty print purposes
 import time
 import sys
 import threading
-from itertools import combinations
+import psutil
+import os
 
 # Schedule Intel imports
 from collections import defaultdict
 from typing import Dict, List, Any
 
 class ChronometerCallback(cp_model.CpSolverSolutionCallback):
-    def __init__(self, model, conflict_penalties):
+    def __init__(self, model, conflict_penalties, test=False):
         super().__init__()
         self.start_time = time.time()
         self.running = True
@@ -24,13 +25,23 @@ class ChronometerCallback(cp_model.CpSolverSolutionCallback):
         self.conflict_penalties = conflict_penalties
         self.found_feasible = False
         self.continue_search = True
+        self.max_cpu = 0
+        self.max_ram = 0
+        self.test = test
 
     def update_timer(self):
         """Continuously update elapsed time every second until stopped."""
         while self.running:
             if not self.paused:
                 elapsed = time.time() - self.start_time - self.accumulated_pause_time
-                sys.stdout.write(f"\rElapsed time: {elapsed:.2f} s")
+                process = psutil.Process(os.getpid())  # Get current process
+                ram_usage = process.memory_info().rss / (1024 * 1024)  # Convert to MB
+                cpu_usage = process.cpu_percent(interval=0.1)/10 # CPU usage (%)
+                if(ram_usage > self.max_ram):
+                    self.max_ram = ram_usage
+                if(cpu_usage > self.max_cpu):
+                    self.max_cpu = cpu_usage
+                sys.stdout.write(f"\rElapsed time: {elapsed:.2f} s | CPU : {cpu_usage:.2f} % | RAM {ram_usage:.2f} Mb | Peak CPU : {self.max_cpu:.2f} % | Max RAM : {self.max_ram:.2f} Mb      ")
                 sys.stdout.flush()
             time.sleep(1)  # Update every second
 
@@ -69,11 +80,15 @@ class ChronometerCallback(cp_model.CpSolverSolutionCallback):
             self.found_feasible = True
             self.pause_chronometer()
             print("\nFound a feasible solution without conflicts!")
-            user_input = input("Stop search and use this solution? (y/n): ")
-            if user_input.lower() == 'y':
+            if self.test == True:
                 self.continue_search = False
                 self.StopSearch()
-            self.resume_chronometer()
+            else:
+                user_input = input("Stop search and use this solution? (y/n): ")
+                if user_input.lower() == 'y':
+                    self.continue_search = False
+                    self.StopSearch()
+                self.resume_chronometer()
 
     def EndSearch(self):
         """Stop the chronometer and ensure the final time is displayed."""
@@ -228,13 +243,14 @@ class ScheduleIntelligence:
 
 
 class CSP:
-    def __init__(self, university: University):
+    def __init__(self, university: University, test = False):
         self.university = university
         self.model = cp_model.CpModel()
         self.variables = {}  # Dictionary to store variables for each course
         self.generated_courses: List[Course] = []  # List of all generated courses
         self.solver = cp_model.CpSolver()
         self.chronometer = None
+        self.test = test
 
         # Store objective terms
         self.gap_penalties = []  # For storing gap penalties
@@ -312,7 +328,7 @@ class CSP:
         self.restrictWeekendTimeslots()
 
     def createSoftConstraints(self):
-        print("Balanced courses ...")
+        print(" - Balanced courses ...")
         # Balance courses across days
         self.balanceCoursesAcrossDays()
         
@@ -329,56 +345,30 @@ class CSP:
             self.model.Minimize(total_cost)
 
     def noRoomOverlap(self):
-        """
-        Optimized room overlap constraints using NoOverlap global constraint.
-        """
-        # 1. Group courses by room to reduce the number of comparisons
-        room_to_courses = defaultdict(list)
-        all_courses = []
-        
-        # Collect all courses and organize them by potential room
-        course_index = 0
-        for group in self.variables.values():
-            for subject in group.values():
-                for course in subject.values():
-                    all_courses.append((course_index, course))
-                    course_index += 1
-        
-        # 2. For each room, create an optional interval for each course that might use it
-        n_rooms = len(self.university.rooms)
-        for room_idx in range(n_rooms):
-            intervals_for_room = []
-            print(f" - - Room {room_idx+1}/{n_rooms}", end="\r")
-            
-            for course_idx, course in all_courses:
-                # Create a boolean variable indicating if this course is in this room
-                is_in_room = self.model.NewBoolVar(f'course_{course_idx}_in_room_{room_idx}')
+        courses = []
+        for _, group in self.variables.items():
+            for _, subject in group.items():
+                for course_key, course in subject.items():
+                    courses.append(course)
+
+        for i in range(len(courses)):
+            print(f" - - Course {i+1}/{len(courses)}", end="\r")
+            for j in range(i + 1, len(courses)):
+                same_timeslot = self.model.NewBoolVar(f'same_timeslot_{i}_{j}')
+                self.model.Add(courses[i]['timeslot'] == courses[j]['timeslot']).OnlyEnforceIf(same_timeslot)
+                self.model.Add(courses[i]['timeslot'] != courses[j]['timeslot']).OnlyEnforceIf(same_timeslot.Not())
                 
-                # Link this boolean to the room assignment
-                self.model.Add(course['room'] == room_idx).OnlyEnforceIf(is_in_room)
-                self.model.Add(course['room'] != room_idx).OnlyEnforceIf(is_in_room.Not())
+                same_room = self.model.NewBoolVar(f'same_room_{i}_{j}')
+                self.model.Add(courses[i]['room'] == courses[j]['room']).OnlyEnforceIf(same_room)
+                self.model.Add(courses[i]['room'] != courses[j]['room']).OnlyEnforceIf(same_room.Not())
                 
-                # Create an optional interval variable for this course in this room
-                # The interval spans just one timeslot (duration = 1)
-                optional_interval = self.model.NewOptionalIntervalVar(
-                    course['timeslot'],  # start
-                    1,                   # duration (1 timeslot)
-                    course['timeslot'] + 1,  # end (start + duration)
-                    is_in_room,          # is_present literal
-                    f'course_{course_idx}_room_{room_idx}_interval'
-                )
+                # Add penalty when same timeslot AND same room
+                conflict_penalty = self.model.NewBoolVar(f'room_conflict_{i}_{j}')
+                self.model.AddBoolAnd([same_timeslot, same_room]).OnlyEnforceIf(conflict_penalty)
+                self.model.AddBoolOr([same_timeslot.Not(), same_room.Not()]).OnlyEnforceIf(conflict_penalty.Not())
                 
-                intervals_for_room.append(optional_interval)
-            
-            # 3. Add a NoOverlap constraint for each room
-            if intervals_for_room:  # Only add constraint if there are potential intervals
-                self.model.AddNoOverlap(intervals_for_room)
+                self.conflict_penalties.append(conflict_penalty)
         print("")
-        # 4. For completeness, add a counter to track total conflicts across all rooms
-        # This is useful if you want to minimize conflicts rather than eliminating them completely
-        total_conflicts = self.model.NewIntVar(0, len(all_courses) * (len(all_courses) - 1) // 2, 'total_room_conflicts')
-        self.model.Add(total_conflicts == 0)  # Ensure no conflicts
-        self.conflict_penalties.append(total_conflicts)  # Add to penalties
 
     def noMultipleCoursesOnTimeslotForGroup(self):
         courses = []
@@ -615,13 +605,17 @@ class CSP:
 
         # Configure solver for flexibility
         import multiprocessing
-        self.solver.parameters.num_search_workers = int(multiprocessing.cpu_count()/2)
-        print(f"Using {int(multiprocessing.cpu_count()/2)} cores")
-        max_time = int(input("How many seconds should the solver run for (max):\n"))
+        worknum = int(multiprocessing.cpu_count()/2)
+        self.solver.parameters.num_search_workers = worknum # int(multiprocessing.cpu_count()/2)
+        print(f"Using {worknum} cores")
+        if(self.test):
+            max_time = 1200
+        else:
+            max_time = int(input("How many seconds should the solver run for (max):\n"))
         self.solver.parameters.max_time_in_seconds = max_time
 
         print(f"\nInstance generated, solving the CSP...")
-        self.chronometer = ChronometerCallback(self.model, self.conflict_penalties)
+        self.chronometer = ChronometerCallback(self.model, self.conflict_penalties, self.test)
         status = self.solver.Solve(self.model, self.chronometer)
         self.chronometer.running = False
 
@@ -633,10 +627,10 @@ class CSP:
             self.variablesToCourses()
             
             # Print course assignments (debug)
-            for _, courses in self.variables.items():
-                for _, course in courses.items():
-                    for _, details in course.items():
-                        print(f"{details['subject']} | Timeslot: {self.solver.Value(details['timeslot'])} | Room: {self.solver.Value(details['room'])}")
+            #for _, courses in self.variables.items():
+            #    for _, course in courses.items():
+            #        for _, details in course.items():
+            #            print(f"{details['subject']} | Timeslot: {self.solver.Value(details['timeslot'])} | Room: {self.solver.Value(details['room'])}")
             
             # Perform schedule intelligence analysis
             try:

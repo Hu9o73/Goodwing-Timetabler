@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.1.5
+
+- Added benchmark tests. (Call `pytest -s` to run the tests.)
+- Cleaned `app` and `myTests` modules.
+- Added a git actions to ensure the algorithm runs smoothly !
+
 ## v0.1.4
 
 - Added a Logo to the project.

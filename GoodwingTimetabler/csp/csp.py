@@ -12,7 +12,7 @@ from collections import defaultdict
 from typing import Dict, List, Any
 
 class ChronometerCallback(cp_model.CpSolverSolutionCallback):
-    def __init__(self, model, conflict_penalties):
+    def __init__(self, model, conflict_penalties, test=False):
         super().__init__()
         self.start_time = time.time()
         self.running = True
@@ -27,6 +27,7 @@ class ChronometerCallback(cp_model.CpSolverSolutionCallback):
         self.continue_search = True
         self.max_cpu = 0
         self.max_ram = 0
+        self.test = test
 
     def update_timer(self):
         """Continuously update elapsed time every second until stopped."""
@@ -78,13 +79,16 @@ class ChronometerCallback(cp_model.CpSolverSolutionCallback):
         if not has_conflicts and not self.found_feasible:
             self.found_feasible = True
             self.pause_chronometer()
-            time.sleep(2)
             print("\nFound a feasible solution without conflicts!")
-            user_input = input("Stop search and use this solution? (y/n): ")
-            if user_input.lower() == 'y':
+            if self.test == True:
                 self.continue_search = False
                 self.StopSearch()
-            self.resume_chronometer()
+            else:
+                user_input = input("Stop search and use this solution? (y/n): ")
+                if user_input.lower() == 'y':
+                    self.continue_search = False
+                    self.StopSearch()
+                self.resume_chronometer()
 
     def EndSearch(self):
         """Stop the chronometer and ensure the final time is displayed."""
@@ -239,13 +243,14 @@ class ScheduleIntelligence:
 
 
 class CSP:
-    def __init__(self, university: University):
+    def __init__(self, university: University, test = False):
         self.university = university
         self.model = cp_model.CpModel()
         self.variables = {}  # Dictionary to store variables for each course
         self.generated_courses: List[Course] = []  # List of all generated courses
         self.solver = cp_model.CpSolver()
         self.chronometer = None
+        self.test = test
 
         # Store objective terms
         self.gap_penalties = []  # For storing gap penalties
@@ -603,11 +608,14 @@ class CSP:
         worknum = int(multiprocessing.cpu_count()/2)
         self.solver.parameters.num_search_workers = worknum # int(multiprocessing.cpu_count()/2)
         print(f"Using {worknum} cores")
-        max_time = int(input("How many seconds should the solver run for (max):\n"))
+        if(self.test):
+            max_time = 1200
+        else:
+            max_time = int(input("How many seconds should the solver run for (max):\n"))
         self.solver.parameters.max_time_in_seconds = max_time
 
         print(f"\nInstance generated, solving the CSP...")
-        self.chronometer = ChronometerCallback(self.model, self.conflict_penalties)
+        self.chronometer = ChronometerCallback(self.model, self.conflict_penalties, self.test)
         status = self.solver.Solve(self.model, self.chronometer)
         self.chronometer.running = False
 

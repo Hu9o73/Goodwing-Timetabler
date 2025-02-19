@@ -3,3 +3,5 @@ Constraints_Maths.pdf
 __pycache__/
 
 LaTeX_File/
+
+.pytest_cache/

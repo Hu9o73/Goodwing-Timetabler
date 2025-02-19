@@ -1,10 +1,6 @@
 name: CSP Performance Benchmark
 
 on:
-  push:
-    branches:
-      - main
-      - dev  # Run on main & dev branches
   pull_request:
     branches:
       - main

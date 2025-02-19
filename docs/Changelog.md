@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.1.6
+
+- Optimized `ensureLunchBreak()`, reducing the number of constraints by 98%.
+    - Reduced complexity from $o(N \times L)$ to $o(N)$.
+        - N being the number of courses
+        - L being the number of lunch break slots 
+- Modified benchmark to run only upon pull request with main branch.
+
 ## v0.1.5
 
 - Added benchmark tests. (Call `pytest -s` to run the tests.)

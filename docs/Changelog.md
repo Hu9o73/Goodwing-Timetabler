@@ -3,6 +3,7 @@
 ## v0.1.4
 
 - Added a Logo to the project.
+- Added a RAM and CPU usage tracker.
 - Reverted changes done to `noRoomOverlap()` in `v0.1.2` as it turned the constraint to hard, we want it soft !
     - Took the function from `v0.1.1`
 

@@ -4,7 +4,8 @@ import yaml # Nested dictionnary pretty print purposes
 import time
 import sys
 import threading
-from itertools import combinations
+import psutil
+import os
 
 # Schedule Intel imports
 from collections import defaultdict
@@ -24,13 +25,22 @@ class ChronometerCallback(cp_model.CpSolverSolutionCallback):
         self.conflict_penalties = conflict_penalties
         self.found_feasible = False
         self.continue_search = True
+        self.max_cpu = 0
+        self.max_ram = 0
 
     def update_timer(self):
         """Continuously update elapsed time every second until stopped."""
         while self.running:
             if not self.paused:
                 elapsed = time.time() - self.start_time - self.accumulated_pause_time
-                sys.stdout.write(f"\rElapsed time: {elapsed:.2f} s")
+                process = psutil.Process(os.getpid())  # Get current process
+                ram_usage = process.memory_info().rss / (1024 * 1024)  # Convert to MB
+                cpu_usage = process.cpu_percent(interval=0.1)/10 # CPU usage (%)
+                if(ram_usage > self.max_ram):
+                    self.max_ram = ram_usage
+                if(cpu_usage > self.max_cpu):
+                    self.max_cpu = cpu_usage
+                sys.stdout.write(f"\rElapsed time: {elapsed:.2f} s | CPU : {cpu_usage:.2f} % | RAM {ram_usage:.2f} Mb | Peak CPU : {self.max_cpu:.2f} % | Max RAM : {self.max_ram:.2f} Mb      ")
                 sys.stdout.flush()
             time.sleep(1)  # Update every second
 
@@ -68,6 +78,7 @@ class ChronometerCallback(cp_model.CpSolverSolutionCallback):
         if not has_conflicts and not self.found_feasible:
             self.found_feasible = True
             self.pause_chronometer()
+            time.sleep(2)
             print("\nFound a feasible solution without conflicts!")
             user_input = input("Stop search and use this solution? (y/n): ")
             if user_input.lower() == 'y':
@@ -589,8 +600,9 @@ class CSP:
 
         # Configure solver for flexibility
         import multiprocessing
-        self.solver.parameters.num_search_workers = int(multiprocessing.cpu_count()/2)
-        print(f"Using {int(multiprocessing.cpu_count()/2)} cores")
+        worknum = int(multiprocessing.cpu_count()/2)
+        self.solver.parameters.num_search_workers = worknum # int(multiprocessing.cpu_count()/2)
+        print(f"Using {worknum} cores")
         max_time = int(input("How many seconds should the solver run for (max):\n"))
         self.solver.parameters.max_time_in_seconds = max_time
 

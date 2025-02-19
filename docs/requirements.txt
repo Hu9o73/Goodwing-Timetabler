@@ -6,3 +6,4 @@ openpyxl
 pytest
 pytest-benchmark
 psutil
+yaml

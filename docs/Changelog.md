@@ -6,7 +6,10 @@
     - Reduced complexity from $o(N \times L)$ to $o(N)$.
         - N being the number of courses
         - L being the number of lunch break slots 
-- Modified benchmark to run only upon pull request with main branch.
+- Time reducton on the same instance of the problem\* (To obtain a feasible solution) from v0.1.0 to v0.1.1 :
+    - Instantiation time reduced by 18%.
+    - Computation time reduced by 10% on average.
+- Modified benchmark to run only upon push on the main branch.
 
 ## v0.1.5
 

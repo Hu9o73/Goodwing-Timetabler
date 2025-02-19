@@ -371,6 +371,7 @@ class CSP:
         print("")
 
     def noMultipleCoursesOnTimeslotForGroup(self):
+        total_constraints = 0
         courses = []
         for _, group in self.variables.items():
             # Group is a Tuple with : (group name, corresponding items)
@@ -386,7 +387,9 @@ class CSP:
                 if courses[i]['group'] == courses[j]['group']:
                     # Add constraint: courses in the same group cannot share the same timeslot
                     self.model.Add(courses[i]['timeslot'] != courses[j]['timeslot'])
-        print("")
+                    total_constraints += 1
+        
+        print(f" - - Added {total_constraints} constraints")
 
     def noTeacherOverlap(self):
         courses = []
@@ -441,21 +444,26 @@ class CSP:
         print("")
 
     def ensureLunchBreak(self):
-        # Loop through all courses in the model
-        for group_name, subjects in self.variables.items():
-            for subject_name, subject_courses in subjects.items():
-                for course_idx, course in subject_courses.items():
-                    timeslot_var = course['timeslot']
-                    
-                    # Define the lunch break timeslot indices: index % 7 == 2 (Corresponding to 11:30 -> 13:15)
-                    lunch_break_timeslots = [index for index, _ in enumerate(self.university.timeslots) if index % 7 == 2]
-                    
-                    # Add a constraint that the timeslot should not be any of the lunch break timeslots
-                    self.model.Add(timeslot_var != lunch_break_timeslots[0])
-                    
-                    # Loop through all the lunch break timeslots to enforce no assignment for any of them
-                    for lunch_slot in lunch_break_timeslots[1:]:
-                        self.model.Add(timeslot_var != lunch_slot)
+        total_constraints = 0
+
+        # Define the lunch break timeslot indices (11:30 -> 13:15), where index % 7 == 2
+        lunch_break_timeslots = [index for index, _ in enumerate(self.university.timeslots) if index % 7 == 2]
+
+        # Collect all course timeslot variables
+        all_timeslot_vars = [
+            course['timeslot']
+            for subjects in self.variables.values()
+            for subject_courses in subjects.values()
+            for course in subject_courses.values()
+        ]
+
+        # Apply forbidden assignments for each variable individually
+        for var in all_timeslot_vars:
+            self.model.AddForbiddenAssignments([var], [[slot] for slot in lunch_break_timeslots])
+            total_constraints += 1
+
+        print(f" - - Excluded {len(lunch_break_timeslots)} lunch break timeslots for {len(all_timeslot_vars)} courses")
+        print(f" - - Added {total_constraints} constraints")
 
     def restrictWeekendTimeslots(self):
         """

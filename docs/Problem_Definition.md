@@ -1,5 +1,6 @@
 # Problem Definition
 
+*This project started as a school project. The following file talks about the problem we had to find and answer to. Nevertheless, the algorithm adapts to other university instances, not only mine ! Thus, keep in mind that course durations, timeslots, and other constraints, can be adapted to suit your needs !*
 
 ## Our problem :
 

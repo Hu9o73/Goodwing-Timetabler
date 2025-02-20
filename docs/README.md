@@ -68,4 +68,3 @@ Sidenote: Don't try to generate HUGE instances if your computer doesn't have a g
 | [Problem Definition](Problem_Definition.md) | Our problem, thoroughly defined |
 | [Maths Constraints](Constraints_Maths.md) | The constraints of our problem, defined as mathematical relations |
 | [Changelog](Changelog.md) | Changelog of the project |
-| [How to Contribute](how_to_contribute.pdf) | How to help the project. (Needs an update !) |

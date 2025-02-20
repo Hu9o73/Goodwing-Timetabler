@@ -23,7 +23,9 @@ From a University instance that you can set up, running the algorithm will yield
 
 To easily setup your instance of the problem, go to `GoodwingTimetabler/UniversityInstance/UniversityGeneator.xlsx` and modify the excel sheets according to your problem.
 
-*Note: Ensure that the number of hours required to complete a subject is a multiple of a timeslot duration ! Otherwise you might see that a course is missing or extra.*
+*Notes:* 
+- *Ensure that the number of hours required to complete a subject is a multiple of a timeslot duration ! Otherwise you might see that a course is missing or extra.*
+- *Ensure that the starting day is a monday !*
 
 ## Running the app
 
@@ -35,7 +37,7 @@ Wait for the problem to generate, set a max time limit for the solver to do its 
 
 You can also run `pytest -s` to test the algorithm's performances (takes time).
 
-Sidenote: The CSP is poorly optimized at the moment (this is being taken care of !). Don't try to generate HUGE instances if your computer doesn't have a good enough CPU and RAM.
+Sidenote: Don't try to generate HUGE instances if your computer doesn't have a good enough CPU and RAM.
 
 ## Roadmap
 | Feature                                   | Implemented | Note                    |

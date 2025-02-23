@@ -21,7 +21,7 @@ From a University instance that you can set up, running the algorithm will yield
 
 ## Setting up your instance
 
-To easily setup your instance of the problem, go to `GoodwingTimetabler/UniversityInstance/UniversityGeneator.xlsx` and modify the excel sheets according to your problem.
+To easily setup your instance of the problem, go to `Inputs/University.xlsx` and modify the excel sheets according to your problem.
 
 *Notes:* 
 - *Ensure that the number of hours required to complete a subject is a multiple of a timeslot duration ! Otherwise you might see that a course is missing or extra.*
@@ -29,7 +29,15 @@ To easily setup your instance of the problem, go to `GoodwingTimetabler/Universi
 
 ## Running the app
 
-The app runs with Python. Go inside the repo's folder in your terminal and, ensuring that python is installed, run:
+### With the installer
+
+Go the the releases page and download the latest version of the installer. Follow the installation steps and double-click `GoodwingTimetabler.exe` !
+
+You can easily access Inputs and Outputs folders to modify your instance of the problem and access your result ! 
+
+### With python
+
+If you feel like programming and modifying the source code, you can run the app with Python. Go inside the repo's folder in your terminal and, ensuring that python is installed, run:
 
 `python .\GoodwingTimetabler`
 

@@ -1,5 +1,7 @@
 # Constraints formulated as maths equations
 
+*See Problem_Definition.md first !*
+
 - Our university has:
     - A given **r** number of rooms. Each room might be a **special room**.
         - **Special rooms** are rooms with specific furnitures. For instance lab furnitures are in **lab** rooms. **Lab** rooms are considered as a **special room**.

@@ -1,19 +1,31 @@
 ![Logo](./Images/Logos/Logo_v1_blanc.png)
  
-# Goodwing Timetabler | v 0.1.6
+# Goodwing Timetabler | v 0.2.0
 
 ## The Timetabling Problem, briefly
 
-The disruptions caused by the COVID-19 pandemic have introduced new constraints in managing several complex problems of daily life. Among these, work schedule planning, an NP-hard optimization problem, has been particularly affected. This type of problem appears in various sectors such as administration, transportation, production, healthcare, and education.
+Timetabling is a well-known **constraint satisfaction problem (CSP)** that involves scheduling a set of events while satisfying a range of constraints. This problem is prevalent in various fields, including **education, healthcare, transportation, and workforce management**. In the context of universities, the challenge lies in assigning courses to specific time slots, rooms, and instructors while ensuring that constraints such as availability, capacity, and fairness are met.  
 
-In this context, we focus on the problem of optimizing university timetables. Before the pandemic, creating a timetable involved respecting certain constraints, such as the availability of teachers, classrooms, and permissible time slots. Any solution meeting these constraints was considered optimal. However, new constraints have emerged with the pandemic, such as limiting the number of students physically present, distance learning, hybrid formats, making the planning process more complex.
+Timetabling is considered an **NP-hard optimization problem**, meaning that finding an optimal solution becomes computationally complex as the number of variables and constraints increases. A valid timetable must respect multiple factors, including:  
 
-The objective of this project is to propose solutions, either exact or approximate, for the problem of course scheduling by considering both classical constraints (availability of teachers and classrooms) and new constraints related to teaching methods (in-person, distance, or hybrid), as well as balancing the workload for students according to these modalities.
-The student will begin by conducting a literature review on the problem and then develop a new solution approach. Finally, tests will be conducted on a dataset to evaluate the solution and test its robustness.
+- **Resource constraints**: Availability of instructors, classrooms, and equipment.  
+- **Time constraints**: Ensuring no scheduling conflicts among courses and instructors.  
+- **Student needs**: Avoiding overlapping courses and balancing workloads.  
+- **Institutional policies**: Adhering to predefined academic structures, breaks, and weekend restrictions.  
+
+Modern challenges, such as **hybrid learning models** , have introduced additional constraints, making the problem even more intricate. To tackle this, solutions range from **exact methods** (such as integer programming and constraint solvers) to **heuristic and metaheuristic approaches** (such as genetic algorithms and simulated annealing). Our goal is to generate **efficient, practical, and adaptable** timetables that meet institutional and individual requirements.
+
+## What does the Goodwing Timetabler do ?
+
+From a University instance that you can set up, running the algorithm will yield an optimal or sub-optimal solution regarding the schedule of all the groups. Ensuring all groups can attend sufficient courses to complete all their subjects.
 
 ## Setting up your instance
 
 To easily setup your instance of the problem, go to `GoodwingTimetabler/UniversityInstance/UniversityGeneator.xlsx` and modify the excel sheets according to your problem.
+
+*Notes:* 
+- *Ensure that the number of hours required to complete a subject is a multiple of a timeslot duration ! Otherwise you might see that a course is missing or extra.*
+- *Ensure that the starting day is a monday !*
 
 ## Running the app
 
@@ -25,7 +37,29 @@ Wait for the problem to generate, set a max time limit for the solver to do its 
 
 You can also run `pytest -s` to test the algorithm's performances (takes time).
 
-Sidenote: The CSP is poorly optimized at the moment (this is being taken care of !). Don't try to generate HUGE instances if your computer doesn't have a good enough CPU and RAM.
+Sidenote: Don't try to generate HUGE instances if your computer doesn't have a good enough CPU and RAM.
+
+## Roadmap
+| Feature                                   | Implemented | Note                    |
+|-------------------------------------------|-------------|-------------------------|
+| **Constraints**                           |             | |
+| Personnalized University                  | Yes         | |
+| Promotions and groups handling            | Yes         | |
+| Personnalized Timeslots and Timespan      | Yes         | |
+| Unique schedule per week                  | Yes         | |
+| Overlaps handling                         | Yes         | Soft constraint* |
+| Lunch breaks                              | Yes         | |
+| Slot restriction (weekends)               | Yes         | |
+| Course balancing                          | Yes         | |
+| Teacher availability                      | Partially   | No easy access from the excel yet |
+| Online/Presential courses                 | Not yet     | |
+| Special room handling                     | Not yet     | |
+|                                           |             | |
+| **Means of solving the problem**          |             | |
+| CSP Solver                                | Yes         | Using OR-Tools  |
+| Genetic Algorithm, Neural Network         | No          | Not planned yet, but the idea sounds good !|
+
+**Soft Constraint: The overlaps for teachers and rooms are treated as soft constraints to always yield a solution. It's then up to the user to find a feasible solution by examining where are the overlaps. This is done looking at the Schedule Inetlligence in the terminal, after the algorithm ran.*
 
 ## Documentation
 
@@ -34,4 +68,3 @@ Sidenote: The CSP is poorly optimized at the moment (this is being taken care of
 | [Problem Definition](Problem_Definition.md) | Our problem, thoroughly defined |
 | [Maths Constraints](Constraints_Maths.md) | The constraints of our problem, defined as mathematical relations |
 | [Changelog](Changelog.md) | Changelog of the project |
-| [How to Contribute](how_to_contribute.pdf) | How to help the project. (Needs an update !) |

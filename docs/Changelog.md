@@ -1,5 +1,14 @@
 # Changelog
 
+## v0.2.1
+
+- Added an installer, installing the app alongside a .exe file that anyone can run !
+    - Users don't need to install python or any libraries anymore, it can all be done via the installer !
+    - Note: As the installer is a compiled file, modifications you make to the code on your forks won't affect the installer.
+    - Users install the .exe, `Inputs` and `Outputs` folders. Makes the app easier to use for non-programmers.
+- Took the default input folder out of the `/GoodwingTimetabler` folder.
+    - Past input folder wasn't completely deleted and is still the default folder if no argument is passed in `GenerateUniv2()` in `app/main.py`
+
 ## v0.2.0
 
 - Optimization at its finest !

@@ -11,18 +11,19 @@ from typing import List, Dict
 from collections import defaultdict
 from csp import University
 
-def createCSV(xlsx_path: str = './GoodwingTimetabler/UniversityInstance/UniversityGenerator.xlsx'):
+def createCSV(gen_dir: str = './GoodwingTimetabler/UniversityInstance/'):
     sheets = ['University', 'Timeslots', 'Promotions', 'Subjects', 'Teachers', 'Rooms']
     dfs = []
     for idx, sheet_name in enumerate(sheets):
-        dfs.append(pd.read_excel(xlsx_path, sheet_name))
-        dfs[idx].to_csv(f'./GoodwingTimetabler/UniversityInstance/{sheet_name}.csv', index=False)
+        dfs.append(pd.read_excel(gen_dir+'University.xlsx', sheet_name))
+        dfs[idx].to_csv(f'{gen_dir}csv/{sheet_name}.csv', index=False)
 
-    for df in dfs:
-        pd.set_option('display.max_columns', 1000)
-        pd.set_option('display.width', 1000)
-        print(df)
-        print('\n')
+    # Print the CSV
+    #for df in dfs:
+    #    pd.set_option('display.max_columns', 1000)
+    #    pd.set_option('display.width', 1000)
+    #    print(df)
+    #    print('\n')
 
 class ExcelScheduleManager:
     def __init__(self, university: University, generated_courses):

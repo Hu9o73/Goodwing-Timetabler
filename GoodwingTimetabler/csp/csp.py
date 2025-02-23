@@ -482,19 +482,19 @@ class CSP:
         for course in all_courses:
             timeslot_var = course['timeslot']
             
+            solts_per_days = int(len(self.university.time_ranges))
             # Create intermediate variables for the modulo operations
             week_day = self.model.NewIntVar(0, 6, f'week_day_{id(course)}')  # 0-6 for days of week
-            day_slot = self.model.NewIntVar(0, 6, f'day_slot_{id(course)}')  # 0-6 for slots within day
+            day_slot = self.model.NewIntVar(0, solts_per_days, f'day_slot_{id(course)}')  # slots within day
             
-            # timeslot_var = week * 49 + day * 7 + slot
             # Use AddModuloEquality for both operations
             # First get the slot within the day
-            self.model.AddModuloEquality(day_slot, timeslot_var, 7)
+            self.model.AddModuloEquality(day_slot, timeslot_var, solts_per_days)
             
-            # Then get the day of week (after dividing by 7)
-            timeslot_div_7 = self.model.NewIntVar(0, 1000, f'timeslot_div_7_{id(course)}')  # Adjust range as needed
-            self.model.AddDivisionEquality(timeslot_div_7, timeslot_var, 7)
-            self.model.AddModuloEquality(week_day, timeslot_div_7, 7)
+            # Then get the day of week (after dividing by the number of slots per day)
+            timeslot_div = self.model.NewIntVar(0, len(self.university.timeslots), f'timeslot_div_{id(course)}')
+            self.model.AddDivisionEquality(timeslot_div, timeslot_var, solts_per_days)
+            self.model.AddModuloEquality(week_day, timeslot_div, solts_per_days)
             
             # Create constraints for Saturday afternoon (day 5, slots 3-6)
             is_saturday = self.model.NewBoolVar(f'is_saturday_{id(course)}')
@@ -619,7 +619,12 @@ class CSP:
         if(self.test):
             max_time = 1200
         else:
-            max_time = int(input("How many seconds should the solver run for (max):\n"))
+            try:
+                max_time = int(input("How many seconds should the solver run for (max):\n"))
+            except:
+                print("You didn't gave a correct integer value. Max time set to 1200 seconds.")
+                max_time = 1200
+                
         self.solver.parameters.max_time_in_seconds = max_time
 
         print(f"\nInstance generated, solving the CSP...")

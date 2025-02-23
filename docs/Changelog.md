@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.1.7
+
+- Fixed `restrictWeekendTimeslot()`, now working for days with any number of timeslot per day (previously 7).
+- Fixed instantiation, consider the possibility that the user doesn't provide an integer for the number of max seconds, the program responds accordingly. 
+
 ## v0.1.6
 
 - Optimized `ensureLunchBreak()`, reducing the number of constraints by 98%.

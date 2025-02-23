@@ -5,22 +5,22 @@ from collections import defaultdict
 
 def generateUniv2(gen_dir:str = './GoodwingTimetabler/UniversityInstance/'):
     from util import createCSV
-    createCSV()
+    createCSV(gen_dir)
 
     # Getting the general info
-    uniCSV = pd.read_csv(gen_dir+'University.csv', sep=',')
+    uniCSV = pd.read_csv(gen_dir+'csv/University.csv', sep=',')
     name = uniCSV["Value"][0]
     start_date = dt.date(int(uniCSV["Value"][3]), int(uniCSV["Value"][2]), int(uniCSV["Value"][1]))
     days = int(uniCSV["Value"][4])
 
     # Getting the values for the rooms
-    roomsCSV = pd.read_csv(gen_dir+'Rooms.csv', sep=',')
+    roomsCSV = pd.read_csv(gen_dir+'csv/Rooms.csv', sep=',')
     rooms = []
     for _, row in roomsCSV.iterrows():
         rooms.append(Room(row["Name"], row["Type"]))
 
     # Getting the values for the subjects
-    subjectsCSV = pd.read_csv(gen_dir + 'Subjects.csv', sep=',')
+    subjectsCSV = pd.read_csv(gen_dir + 'csv/Subjects.csv', sep=',')
     subjects = []
     for idx, row in subjectsCSV.iterrows():
         subjects.append([row["Id"], row["Promotion"], Subject(row["Name"], row["Id"], row["Hours"], row["Color"])])
@@ -32,7 +32,7 @@ def generateUniv2(gen_dir:str = './GoodwingTimetabler/UniversityInstance/'):
 
 
     # Getting the values for the promotions
-    promotionsCSV = pd.read_csv(gen_dir+'Promotions.csv', sep=',')
+    promotionsCSV = pd.read_csv(gen_dir+'csv/Promotions.csv', sep=',')
     groups_names = []
     promo_names = []
     for col in promotionsCSV.columns:
@@ -60,7 +60,7 @@ def generateUniv2(gen_dir:str = './GoodwingTimetabler/UniversityInstance/'):
         return None   
 
     # Getting the values for the teachers
-    teachersCSV = pd.read_csv(gen_dir + 'Teachers.csv', sep=',')
+    teachersCSV = pd.read_csv(gen_dir + 'csv/Teachers.csv', sep=',')
     teachers = []
     for idx, row in teachersCSV.iterrows():
         teacher_subjects_id = row["Subjects (séparés d'un '-')"].split('-')
@@ -72,7 +72,7 @@ def generateUniv2(gen_dir:str = './GoodwingTimetabler/UniversityInstance/'):
         teachers.append(Teacher(row["First Name"], row["Last Name"], teacher_subjects, teacher_availability))
 
     # Getting the timeslots
-    timeslotsCSV = pd.read_csv(gen_dir + 'Timeslots.csv')
+    timeslotsCSV = pd.read_csv(gen_dir + 'csv/Timeslots.csv')
     time_ranges = []
     for idx, row in timeslotsCSV.iterrows():
         time_ranges.append((dt.time(row["StartH"], row["StartMin"]), dt.time(row["EndH"], row["EndMin"])))

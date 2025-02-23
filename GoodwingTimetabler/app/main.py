@@ -5,16 +5,20 @@ from util import ExcelScheduleManager
 def run_app():
     generateScheduleUsingCSP()
 
+    # To let console stay open upon app end of execution (important if we run the .exe !)
+    input("Press Enter to exit...")
+
 
 def run_test():
     test_csp_solver_performance()
 
 
 def generateScheduleUsingCSP():
-    print("app running...\n")
+    print("app running...\n\n\n")
+    print("=========== Goodwing Timetabler v0.2.1 ===========\n\n")
 
     # Create the university
-    my_univ = generateUniv2()
+    my_univ = generateUniv2("./Inputs/")
     print("Univ generated successfully : ", my_univ)
     print("Generating the CSP...")
     # Instantiate and solve the CSP

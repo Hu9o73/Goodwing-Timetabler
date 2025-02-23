@@ -1,0 +1,1 @@
+This folder is used if no input folder is called when calling GenerateUniv2 in main.py line ~22

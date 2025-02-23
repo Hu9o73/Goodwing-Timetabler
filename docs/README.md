@@ -1,6 +1,6 @@
 ![Logo](./Images/Logos/Logo_v1_blanc.png)
  
-# Goodwing Timetabler | v 0.2.0
+# Goodwing Timetabler | v 0.2.1
 
 ## The Timetabling Problem, briefly
 

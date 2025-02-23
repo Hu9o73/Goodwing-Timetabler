@@ -1,0 +1,19 @@
+Id,Name,Promotion,Hours,Color
+UNI011,Basic Maths,A1,12,FF5733
+UNI012,Basic Physics,A1,15,FF33A8
+UNI013,Basic Informatics,A1,12,33FF57
+UNI014,Basic Chemistry,A1,15,33A8FF
+UNI015,Basic Biology,A1,9,FFD700
+UNI016,Basic Engineering,A1,15,FF8C00
+UNI021,Advanced Maths,A2,12,DC143C
+UNI022,Advanced Physics,A2,15,8A2BE2
+UNI023,Advanced Informatics,A2,12,00FA9A
+UNI024,Advanced Chemistry,A2,12,1E90FF
+UNI025,Advanced Biology,A2,12,FFD700
+UNI026,Advanced Engineering,A2,15,FF4500
+UNI031,Applied Mathematics,A3,24,FF1493
+UNI032,Quantum Mechanics,A3,27,9932CC
+UNI033,Artificial Intelligence,A3,27,00CED1
+UNI034,Organic Chemistry,A3,30,4682B4
+UNI035,Genetics,A3,21,FFA500
+UNI036,Mechanical Systems,A3,30,DC143C

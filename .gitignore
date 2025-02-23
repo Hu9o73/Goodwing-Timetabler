@@ -6,3 +6,12 @@ LaTeX_File/
 
 .pytest_cache/
 .benchmarks/
+
+# Installer stuff...
+build.bat
+GoodwingTimetabler.exe
+installer_setup.iss
+installer_output/
+
+GoodwingTimetabler/build/
+GoodwingTimetabler/GoodwingTimetabler.spec

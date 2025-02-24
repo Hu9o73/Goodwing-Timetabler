@@ -6,7 +6,7 @@ def run_app():
     generateScheduleUsingCSP()
 
     # To let console stay open upon app end of execution (important if we run the .exe !)
-    input("Press Enter to exit...")
+    input("\nPress Enter to exit...")
 
 
 def run_test():
@@ -15,7 +15,7 @@ def run_test():
 
 def generateScheduleUsingCSP():
     print("app running...\n\n\n")
-    print("=========== Goodwing Timetabler v0.2.1 ===========\n\n")
+    print("=========== Goodwing Timetabler v0.2.2 ===========\n\n")
 
     # Create the university
     my_univ = generateUniv2("./Inputs/")

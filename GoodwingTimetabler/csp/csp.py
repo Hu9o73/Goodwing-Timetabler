@@ -84,6 +84,7 @@ class ChronometerCallback(cp_model.CpSolverSolutionCallback):
                 self.continue_search = False
                 self.StopSearch()
             else:
+                time.sleep(2)
                 user_input = input("Stop search and use this solution? (y/n): ")
                 if user_input.lower() == 'y':
                     self.continue_search = False
@@ -131,7 +132,8 @@ class ScheduleIntelligence:
             for course2 in sorted_courses[i+1:]:
                 # Room Overlap Detection
                 if (course1.timeslot == course2.timeslot and 
-                    course1.room == course2.room):
+                    course1.room == course2.room and 
+                    course1.room.name.lower() != "online" and course2.room.name.lower() != "online"):
                     self.intel['conflicts']['room_overlaps'].append({
                         'courses': [
                             {'subject': course1.subject.name, 'group': course1.group.name},
@@ -316,6 +318,8 @@ class CSP:
     def createConstraints(self):
         print(" - Room overlaps ...")
         self.noRoomOverlap()
+        print(" - Max 30% online hours")
+        self.limit_online_hours()
         print(" - Courses overlaps ...")
         self.noMultipleCoursesOnTimeslotForGroup()
         print(" - Teacher overlaps ...")
@@ -345,12 +349,21 @@ class CSP:
             self.model.Minimize(total_cost)
 
     def noRoomOverlap(self):
+        # First, find if there's an online room and get its index
+        online_room_index = None
+        for i, room in enumerate(self.university.rooms):
+            if room.name.lower() == "online":
+                online_room_index = i
+                break
+
+        # Get all courses
         courses = []
         for _, group in self.variables.items():
             for _, subject in group.items():
                 for course_key, course in subject.items():
                     courses.append(course)
 
+        # Handle room overlap constraints
         for i in range(len(courses)):
             print(f" - - Course {i+1}/{len(courses)}", end="\r")
             for j in range(i + 1, len(courses)):
@@ -362,13 +375,71 @@ class CSP:
                 self.model.Add(courses[i]['room'] == courses[j]['room']).OnlyEnforceIf(same_room)
                 self.model.Add(courses[i]['room'] != courses[j]['room']).OnlyEnforceIf(same_room.Not())
                 
-                # Add penalty when same timeslot AND same room
-                conflict_penalty = self.model.NewBoolVar(f'room_conflict_{i}_{j}')
-                self.model.AddBoolAnd([same_timeslot, same_room]).OnlyEnforceIf(conflict_penalty)
-                self.model.AddBoolOr([same_timeslot.Not(), same_room.Not()]).OnlyEnforceIf(conflict_penalty.Not())
+                # Only add room conflict penalty if neither course is in an online room
+                if online_room_index is not None:
+                    course1_online = self.model.NewBoolVar(f'course1_online_{i}_{j}')
+                    course2_online = self.model.NewBoolVar(f'course2_online_{i}_{j}')
+                    
+                    self.model.Add(courses[i]['room'] == online_room_index).OnlyEnforceIf(course1_online)
+                    self.model.Add(courses[i]['room'] != online_room_index).OnlyEnforceIf(course1_online.Not())
+                    self.model.Add(courses[j]['room'] == online_room_index).OnlyEnforceIf(course2_online)
+                    self.model.Add(courses[j]['room'] != online_room_index).OnlyEnforceIf(course2_online.Not())
+                    
+                    # Add conflict penalty only if neither course is online
+                    conflict_penalty = self.model.NewBoolVar(f'room_conflict_{i}_{j}')
+                    self.model.AddBoolAnd([
+                        same_timeslot, 
+                        same_room, 
+                        course1_online.Not(), 
+                        course2_online.Not()
+                    ]).OnlyEnforceIf(conflict_penalty)
+                    self.model.AddBoolOr([
+                        same_timeslot.Not(), 
+                        same_room.Not(), 
+                        course1_online, 
+                        course2_online
+                    ]).OnlyEnforceIf(conflict_penalty.Not())
+                else:
+                    # If no online room exists, use original conflict logic
+                    conflict_penalty = self.model.NewBoolVar(f'room_conflict_{i}_{j}')
+                    self.model.AddBoolAnd([same_timeslot, same_room]).OnlyEnforceIf(conflict_penalty)
+                    self.model.AddBoolOr([same_timeslot.Not(), same_room.Not()]).OnlyEnforceIf(conflict_penalty.Not())
                 
                 self.conflict_penalties.append(conflict_penalty)
-        print("")
+
+        print("")  # New line after progress indicator
+
+    def limit_online_hours(self):
+        # Identify the index of the "online" room
+        online_room_index = None
+        for i, room in enumerate(self.university.rooms):
+            if room.name.lower() == "online":
+                online_room_index = i
+                print(" - - Courses can take place online.")
+                break
+        
+        if online_room_index is None:
+            print(" - - Courses can't take place online.")
+            return
+        
+        if online_room_index is not None:
+            for group_name, subjects in self.variables.items():
+                for subject_name, courses in subjects.items():
+                    total_courses = len(courses)
+                    max_online_courses = int(0.3 * total_courses)  # 30% limit
+                    
+                    # Create a boolean variable for each course being online
+                    online_vars = []
+                    for course in courses.values():
+                        is_online = self.model.NewBoolVar(f"is_online_{group_name}_{subject_name}_{id(course)}")
+                        self.model.Add(course['room'] == online_room_index).OnlyEnforceIf(is_online)
+                        self.model.Add(course['room'] != online_room_index).OnlyEnforceIf(is_online.Not())
+                        online_vars.append(is_online)
+                    
+                    # Limit the number of online courses
+                    self.model.Add(sum(online_vars) <= max_online_courses)
+            
+            print(" - - Online hours limit constraint added.")
 
     def noMultipleCoursesOnTimeslotForGroup(self):
         total_constraints = 0
@@ -613,7 +684,11 @@ class CSP:
 
         # Configure solver for flexibility
         import multiprocessing
-        worknum = int(multiprocessing.cpu_count()/2)
+        #int(multiprocessing.cpu_count()/2)
+        if int(multiprocessing.cpu_count()) >= 4:
+            worknum = 4
+        else:
+            worknum = multiprocessing.cpu_count()/2
         self.solver.parameters.num_search_workers = worknum # int(multiprocessing.cpu_count()/2)
         print(f"Using {worknum} cores")
         if(self.test):
@@ -657,6 +732,8 @@ class CSP:
                 traceback.print_exc()
         else:
             print("No complete solution found. Please retry giving the CSP more time !")
+            print("If time limit wasn't reached, this might mean that the instance is inconsistent and that no solution can be found !")
+            print(" -> You may want to modify the instance of your problem (adding more days...)")
         
         print(f"Computational time: {round((time.time()-start_time),3)} s")
 

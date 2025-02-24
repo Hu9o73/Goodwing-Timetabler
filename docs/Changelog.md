@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.2.2
+
+- Added the online/presential course support
+    - To include online courses to your scheduler, add a room called "online".
+    - For each group, no more than 30% of the courses per subject can take place online.
+- Modified `noRoomOverlap()` not to apply to room 'online'.
+- Changed the numbers of cores used to 4, to reduce impact on RAM !
+
 ## v0.2.1
 
 - Added an installer, installing the app alongside a .exe file that anyone can run !

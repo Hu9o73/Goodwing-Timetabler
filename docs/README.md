@@ -1,6 +1,6 @@
 ![Logo](./Images/Logos/Logo_v1_blanc.png)
  
-# Goodwing Timetabler | v 0.2.1
+# Goodwing Timetabler | v 0.2.2
 
 ## The Timetabling Problem, briefly
 
@@ -60,8 +60,8 @@ Sidenote: Don't try to generate HUGE instances if your computer doesn't have a g
 | Slot restriction (weekends)               | Yes         | |
 | Course balancing                          | Yes         | |
 | Teacher availability                      | Partially   | No easy access from the excel yet |
-| Online/Presential courses                 | Not yet     | |
-| Special room handling                     | Not yet     | |
+| Online/Presential courses                 | Yes         | |
+| Special room handling                     | No          | |
 |                                           |             | |
 | **Means of solving the problem**          |             | |
 | CSP Solver                                | Yes         | Using OR-Tools  |

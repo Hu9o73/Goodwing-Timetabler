@@ -15,7 +15,7 @@ def run_test():
 
 def generateScheduleUsingCSP():
     print("app running...\n\n\n")
-    print("=========== Goodwing Timetabler v0.2.2 ===========\n\n")
+    print("=========== Goodwing Timetabler v0.2.3 ===========\n\n")
 
     # Create the university
     my_univ = generateUniv2("./Inputs/")

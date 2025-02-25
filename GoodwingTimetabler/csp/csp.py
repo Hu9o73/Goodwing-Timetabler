@@ -335,6 +335,9 @@ class CSP:
         print(" - Balanced courses ...")
         # Balance courses across days
         self.balanceCoursesAcrossDays()
+        print(" - Balanced subjects ...")
+        # Balance individual subjects across weeks
+        self.balanceSubjectsAcrossWeeks()
         
         # Combine different penalty types
         penalties = []
@@ -677,6 +680,71 @@ class CSP:
 
         #for course in self.generated_courses:
          #   print(course)                 
+
+    def balanceSubjectsAcrossWeeks(self):
+        """
+        Adds soft constraints to balance subject courses across available weeks.
+        This prevents having all instances of a subject clustered in a few weeks.
+        """
+        # Process each group and subject separately
+        for group_name, subjects in self.variables.items():
+            for subject_name, subject_courses in subjects.items():
+                # Skip subjects with too few courses
+                if len(subject_courses) < 2:
+                    continue
+                    
+                # Debug
+                #print(f"\nBalancing {subject_name} for {group_name} with {len(subject_courses)} courses")
+                
+                # Get all course variables for this subject
+                courses = list(subject_courses.values())
+                
+                # Calculate weeks in the schedule
+                timeslots_per_week = 7 * len(self.university.time_ranges)
+                num_weeks = len(self.university.timeslots) // timeslots_per_week
+                
+                # Skip if there's only one week
+                if num_weeks <= 1:
+                    continue
+                    
+                total_courses = len(courses)
+                target_courses_per_week = total_courses / num_weeks
+                
+                # Debug
+                #print(f"Target courses per week: {target_courses_per_week}")
+                
+                # Count courses per week
+                week_counts = []
+                for week in range(num_weeks):
+                    # Create course counter for this week
+                    week_courses = self.model.NewIntVar(0, len(courses), f'week_count_{group_name}_{subject_name}_{week}')
+                    week_start = week * timeslots_per_week
+                    week_end = week_start + timeslots_per_week
+                    
+                    # Count how many courses are in this week
+                    course_indicators = []
+                    for course in courses:
+                        is_in_week = self.model.NewBoolVar(f'course_in_week_{group_name}_{subject_name}_{week}_{id(course)}')
+                        self.model.Add(course['timeslot'] >= week_start).OnlyEnforceIf(is_in_week)
+                        self.model.Add(course['timeslot'] < week_end).OnlyEnforceIf(is_in_week)
+                        course_indicators.append(is_in_week)
+                    
+                    self.model.Add(week_courses == sum(course_indicators))
+                    week_counts.append(week_courses)
+                
+                # Add soft constraints to keep counts near the target
+                target = int(target_courses_per_week) if target_courses_per_week >= 1 else 1
+                for week_idx, week_count in enumerate(week_counts):
+                    # Create variables for above and below target
+                    above_target = self.model.NewIntVar(0, len(courses), f'subj_above_target_{group_name}_{subject_name}_{week_idx}')
+                    below_target = self.model.NewIntVar(0, len(courses), f'subj_below_target_{group_name}_{subject_name}_{week_idx}')
+                    
+                    # Link them to the actual count
+                    self.model.Add(week_count - target == above_target - below_target)
+                    
+                    # Add both to penalties with higher weight than general balance
+                    self.balance_penalties.append(above_target * 2)  # Higher weight
+                    self.balance_penalties.append(below_target * 2)  # Higher weight
 
     def solveCSP(self):
         """Enhanced solve method with comprehensive conflict tracking."""

@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.2.3
+
+- Added a soft constraint to unstack subjects.
+    - This is to avoid finishing a subject the first week and then have 5 weeks without it, easing the workload !
+
 ## v0.2.2
 
 - Added the online/presential course support

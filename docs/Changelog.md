@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.3.0
+
+- Added consistency regarding teacher assignement
+    - Teachers are now assigned to groups rather than individual courses !
+- Rewrote readme file to ease app usage !
+
 ## v0.2.5
 
 - Included teacher availability in the excel instantiator file !

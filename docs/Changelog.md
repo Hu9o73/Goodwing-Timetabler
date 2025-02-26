@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.2.5
+
+- Included teacher availability in the excel instantiator file !
+- Fixed `teacherAvailabilityConstraint` function.
+- Added functions to let user create a basic university template they can customize.
+
 ## v0.2.4
 
 - Added a more visually pleasing output !

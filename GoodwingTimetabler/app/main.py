@@ -1,9 +1,31 @@
 from myTests import test_csp_solver_performance
 from csp import *
-from util import ExcelScheduleManager
+from util import ExcelScheduleManager, init_template, create_availability_template
 
 def run_app():
-    generateScheduleUsingCSP()
+    print("app running...\n\n\n")
+    print("=========== Goodwing Timetabler v0.2.4 ===========\n\n")
+
+    print("Choose an option:")
+    print("[1] Start the AI solver")
+    print("[2] Generte Input files")
+    user_input = input("")
+
+    try:
+        user_input = int(user_input)
+    except:
+        print("Please enter a valid input ...")
+        return
+    
+    if user_input == 1:
+        print("\nStarting solver ...")
+        generateScheduleUsingCSP()
+    elif user_input == 2:
+        print("\nGenerating files...")
+        init_template("./Inputs/")
+        print("Done !")
+    else:
+        print("Please enter a valid number ...")
 
     # To let console stay open upon app end of execution (important if we run the .exe !)
     input("\nPress Enter to exit...")
@@ -14,8 +36,6 @@ def run_test():
 
 
 def generateScheduleUsingCSP():
-    print("app running...\n\n\n")
-    print("=========== Goodwing Timetabler v0.2.4 ===========\n\n")
 
     # Create the university
     my_univ = generateUniv2("./Inputs/")

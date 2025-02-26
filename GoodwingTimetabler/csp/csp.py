@@ -495,6 +495,7 @@ class CSP:
     def teacherAvailabilityConstraint(self):
         """
         Ensures teachers are only assigned to courses during their available timeslots.
+        This highly optimized version uses table constraints for maximum efficiency.
         """
         courses = []
         for _, group in self.variables.items():
@@ -506,15 +507,22 @@ class CSP:
             print(f" - - Course {k+1}/{len(courses)}", end="\r")
             teacher_var = course['teacher']
             timeslot_var = course['timeslot']
-
-            # For each potential teacher
+            
+            # Create a list of valid (teacher, timeslot) pairs
+            valid_pairs = []
+            
+            # For each teacher, add all their available timeslots as valid pairs
             for teacher_idx, teacher in enumerate(self.university.teachers):
                 if hasattr(teacher, 'available_slots') and teacher.available_slots:
-                    # Directly enforce that if a teacher is selected, the timeslot must be in their available slots
-                    for ts_idx in range(len(self.university.timeslots)):
-                        if ts_idx not in teacher.available_slots:
-                            self.model.AddImplication(teacher_var == teacher_idx, timeslot_var != ts_idx)
-
+                    for ts_idx in teacher.available_slots:
+                        if 0 <= ts_idx < len(self.university.timeslots):  # Ensure timeslot is valid
+                            valid_pairs.append([teacher_idx, ts_idx])
+            
+            # If we have valid pairs, add a table constraint
+            if valid_pairs:
+                # Table constraint: the pair (teacher_var, timeslot_var) must be in the list of valid pairs
+                self.model.AddAllowedAssignments([teacher_var, timeslot_var], valid_pairs)
+        
         print("")
 
     def ensureLunchBreak(self):

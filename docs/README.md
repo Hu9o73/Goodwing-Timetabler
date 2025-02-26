@@ -1,6 +1,6 @@
 ![Logo](./Images/Logos/Logo_v1_blanc.png)
  
-# Goodwing Timetabler | v 0.2.4
+# Goodwing Timetabler | v 0.2.5
 
 ## The Timetabling Problem, briefly
 
@@ -59,7 +59,7 @@ Sidenote: Don't try to generate HUGE instances if your computer doesn't have a g
 | Lunch breaks                              | Yes         | |
 | Slot restriction (weekends)               | Yes         | |
 | Course balancing                          | Yes         | |
-| Teacher availability                      | Partially   | No easy access from the excel yet |
+| Teacher availability                      | Yes         | |
 | Online/Presential courses                 | Yes         | |
 | Special room handling                     | No          | |
 |                                           |             | |

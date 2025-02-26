@@ -1,6 +1,7 @@
 # File to instantiate a university and a schedule with courses
 from .objects import *
 import pandas as pd
+import numpy as np
 from collections import defaultdict
 
 def generateUniv2(gen_dir:str = './GoodwingTimetabler/UniversityInstance/'):
@@ -59,23 +60,98 @@ def generateUniv2(gen_dir:str = './GoodwingTimetabler/UniversityInstance/'):
                 return subject[2]
         return None   
 
-    # Getting the values for the teachers
-    teachersCSV = pd.read_csv(gen_dir + 'csv/Teachers.csv', sep=',')
-    teachers = []
-    for idx, row in teachersCSV.iterrows():
-        teacher_subjects_id = row["Subjects (séparés d'un '-')"].split('-')
-        teacher_subjects = []
-        for id in teacher_subjects_id:
-            teacher_subjects.append(get_subject_by_id(subjects, id))
-
-        teacher_availability = [i for i in range(2555)]
-        teachers.append(Teacher(row["First Name"], row["Last Name"], teacher_subjects, teacher_availability))
-
     # Getting the timeslots
     timeslotsCSV = pd.read_csv(gen_dir + 'csv/Timeslots.csv')
     time_ranges = []
     for idx, row in timeslotsCSV.iterrows():
         time_ranges.append((dt.time(row["StartH"], row["StartMin"]), dt.time(row["EndH"], row["EndMin"])))
+    
+    slots_per_day = len(time_ranges)
+    
+    # Getting the values for the teachers
+    teachersCSV = pd.read_csv(gen_dir + 'csv/Teachers.csv', sep=',')
+    
+    # Try to get teacher availability data
+    try:
+        availabilityCSV = pd.read_csv(gen_dir + 'csv/TeacherAvailability.csv', sep=',')
+        has_availability_data = True
+        
+        # Create a lookup dictionary for teacher availability by ID
+        teacher_availability_dict = {}
+        
+        for _, row in availabilityCSV.iterrows():
+            teacher_id = str(row['TeacherId'])
+            
+            # Skip header rows or rows without teacher ID
+            if teacher_id == 'TeacherId' or pd.isna(teacher_id):
+                continue
+                
+            # Initialize availability matrix (7 days x slots_per_day)
+            availability_matrix = np.zeros((7, slots_per_day), dtype=int)
+            
+            # Process each day
+            days_of_week = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+            
+            for day_idx, day in enumerate(days_of_week):
+                for slot_idx in range(slots_per_day):
+                    # Column name format: Day_StartTime-EndTime (e.g. Mon_8:15-9:45)
+                    # Fix for the str attribute error - directly format integers as strings without using pandas methods
+                    start_hour = str(int(timeslotsCSV["StartH"].iloc[slot_idx]))
+                    start_min = str(int(timeslotsCSV["StartMin"].iloc[slot_idx])).zfill(2)
+                    end_hour = str(int(timeslotsCSV["EndH"].iloc[slot_idx]))
+                    end_min = str(int(timeslotsCSV["EndMin"].iloc[slot_idx])).zfill(2)
+                    
+                    col_name = f"{day}_{start_hour}:{start_min}-{end_hour}:{end_min}"
+                    
+                    # Check if column exists and value is available (1)
+                    if col_name in row.index and row[col_name] == 1:
+                        availability_matrix[day_idx][slot_idx] = 1
+            
+            # Convert weekly matrix to full schedule slot list
+            available_slots = []
+            
+            # Calculate number of weeks needed for the full period
+            num_weeks = (days + 6) // 7
+            
+            for week in range(num_weeks):
+                for day in range(7):
+                    actual_day = week * 7 + day
+                    if actual_day >= days:  # Skip days beyond the specified period
+                        break
+                    
+                    for slot in range(slots_per_day):
+                        if availability_matrix[day][slot] == 1:
+                            # Calculate absolute slot index
+                            slot_idx = actual_day * slots_per_day + slot
+                            available_slots.append(slot_idx)
+            
+            teacher_availability_dict[teacher_id] = available_slots
+                
+    except (FileNotFoundError, pd.errors.EmptyDataError):
+        print("No teacher availability data found. All teachers will be considered available for all slots.")
+        has_availability_data = False
+    except Exception as e:
+        print(f"Error processing teacher availability: {e}")
+        print("All teachers will be considered available for all slots.")
+        has_availability_data = False
+    
+    # Process teachers
+    teachers = []
+    for idx, row in teachersCSV.iterrows():
+        teacher_id = str(row["Idt"])
+        teacher_subjects_id = row["Subjects (séparés d'un '-')"].split('-')
+        teacher_subjects = []
+        for id in teacher_subjects_id:
+            teacher_subjects.append(get_subject_by_id(subjects, id))
+        
+        # Set teacher availability
+        if has_availability_data and teacher_id in teacher_availability_dict:
+            teacher_availability = teacher_availability_dict[teacher_id]
+        else:
+            # Default: available for all slots
+            teacher_availability = [i for i in range(days * slots_per_day)]
+        
+        teachers.append(Teacher(row["First Name"], row["Last Name"], teacher_subjects, teacher_availability))
 
     my_univ = University(name, rooms, teachers, promotions, start_date, days, time_ranges)
 

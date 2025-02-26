@@ -249,6 +249,7 @@ class CSP:
         self.university = university
         self.model = cp_model.CpModel()
         self.variables = {}  # Dictionary to store variables for each course
+        self.teacher_assignments = {}  # Dictionary to store teacher assignment variables per group and subject
         self.generated_courses: List[Course] = []  # List of all generated courses
         self.solver = cp_model.CpSolver()
         self.chronometer = None
@@ -271,21 +272,36 @@ class CSP:
 
     def createVariables(self):
         overall_course_idx = 0
+        
+        # First, create teacher assignment variables for each group-subject pair
+        for promo in self.university.promotions:
+            for group in promo.groups:
+                if group.name not in self.teacher_assignments:
+                    self.teacher_assignments[group.name] = {}
+                
+                for subject in promo.subjects:
+                    # Filter teachers who can teach this subject
+                    valid_teachers = [i for i, t in enumerate(self.university.teachers) if subject in t.subjects]
+                    
+                    if valid_teachers:  # Only create assignment if there are valid teachers
+                        # Create a single teacher variable for all courses of this subject for this group
+                        teacher_var = self.model.NewIntVarFromDomain(
+                            cp_model.Domain.FromValues(valid_teachers),
+                            f"teacher_assignment_{group.name}_{subject.name}"
+                        )
+                        self.teacher_assignments[group.name][subject.name] = teacher_var
+        
+        # Now create the course variables using the teacher assignments
         for promo in self.university.promotions:
             for group in promo.groups:
                 self.variables[group.name] = {}
                 for subject in promo.subjects:
                     self.variables[group.name][subject.name] = {}
                     
-                    # Filter teachers who can teach this subject
-                    valid_teachers = [i for i, t in enumerate(self.university.teachers) if subject in t.subjects]
-
                     # Calculate number of timeslots needed for the subject
                     required_hours = subject.hours
                     timeslot_duration = self.university.timeslot_duration  # Assume in hours
                     num_courses = int(required_hours // timeslot_duration)
-                    
-                    #print("For ", subject.name, " ", num_courses, " courses of", timeslot_duration ," hours are needed.")
                     
                     for idx_course in range(num_courses):
                         overall_course_idx += 1
@@ -295,19 +311,12 @@ class CSP:
                         # Room variable
                         room_var = self.model.new_int_var(0, len(self.university.rooms) - 1, f"course_{overall_course_idx}_room")
 
-                        # Teacher variable
-                        teacher_var = self.model.NewIntVarFromDomain(
-                            cp_model.Domain.FromValues(valid_teachers),
-                            f"course_{overall_course_idx}_teacher"
-                        )
-
-                        # Create the variable
+                        # Create the variable (without a separate teacher variable per course)
                         self.variables[group.name][subject.name][overall_course_idx] = {
                             'subject': subject.name, 
                             'group': group.name, 
                             'timeslot': timeslot_var, 
-                            'room': room_var, 
-                            'teacher': teacher_var
+                            'room': room_var
                         }
                     
 
@@ -466,11 +475,20 @@ class CSP:
         print(f" - - Added {total_constraints} constraints")
 
     def noTeacherOverlap(self):
+        """
+        Modified to use the group-subject teacher assignments instead of per-course assignments
+        """
         courses = []
-        for _, group in self.variables.items():
-            for _, subject in group.items():
-                for _, course in subject.items():
-                    courses.append(course)
+        for group_name, subjects in self.variables.items():
+            for subject_name, subject_courses in subjects.items():
+                for course_id, course in subject_courses.items():
+                    # Only add if there's a teacher assignment for this group-subject
+                    if group_name in self.teacher_assignments and subject_name in self.teacher_assignments[group_name]:
+                        # Create a course entry with the teacher assignment
+                        course_entry = course.copy()
+                        course_entry['teacher'] = self.teacher_assignments[group_name][subject_name]
+                        course_entry['id'] = course_id  # Store course ID for reference
+                        courses.append(course_entry)
 
         for i in range(len(courses)):
             print(f" - - Course {i+1}/{len(courses)}", end="\r")
@@ -495,33 +513,39 @@ class CSP:
     def teacherAvailabilityConstraint(self):
         """
         Ensures teachers are only assigned to courses during their available timeslots.
-        This highly optimized version uses table constraints for maximum efficiency.
+        This version works with the group-subject teacher assignment model.
         """
         courses = []
-        for _, group in self.variables.items():
-            for _, subject in group.items():
-                for _, course in subject.items():
-                    courses.append(course)
-
+        for group_name, subjects in self.variables.items():
+            for subject_name, subject_courses in subjects.items():
+                # Only process if there's a teacher assignment for this group-subject
+                if group_name in self.teacher_assignments and subject_name in self.teacher_assignments[group_name]:
+                    teacher_var = self.teacher_assignments[group_name][subject_name]
+                    
+                    for course_id, course in subject_courses.items():
+                        course_entry = course.copy()
+                        course_entry['teacher'] = teacher_var
+                        courses.append(course_entry)
+        
         for k, course in enumerate(courses):
             print(f" - - Course {k+1}/{len(courses)}", end="\r")
             teacher_var = course['teacher']
             timeslot_var = course['timeslot']
             
-            # Create a list of valid (teacher, timeslot) pairs
-            valid_pairs = []
-            
-            # For each teacher, add all their available timeslots as valid pairs
+            # For each teacher, create a boolean variable indicating if they are assigned to this course
             for teacher_idx, teacher in enumerate(self.university.teachers):
+                is_assigned = self.model.NewBoolVar(f'teacher_{teacher_idx}_assigned_to_course_{id(course)}')
+                self.model.Add(teacher_var == teacher_idx).OnlyEnforceIf(is_assigned)
+                self.model.Add(teacher_var != teacher_idx).OnlyEnforceIf(is_assigned.Not())
+                
+                # If this teacher is assigned, ensure the timeslot is one they're available for
                 if hasattr(teacher, 'available_slots') and teacher.available_slots:
-                    for ts_idx in teacher.available_slots:
-                        if 0 <= ts_idx < len(self.university.timeslots):  # Ensure timeslot is valid
-                            valid_pairs.append([teacher_idx, ts_idx])
-            
-            # If we have valid pairs, add a table constraint
-            if valid_pairs:
-                # Table constraint: the pair (teacher_var, timeslot_var) must be in the list of valid pairs
-                self.model.AddAllowedAssignments([teacher_var, timeslot_var], valid_pairs)
+                    # For each possible timeslot
+                    for ts_idx in range(len(self.university.timeslots)):
+                        # If this timeslot is not in available_slots, create a constraint
+                        if ts_idx not in teacher.available_slots:
+                            # If this teacher is assigned, this timeslot can't be used
+                            self.model.Add(timeslot_var != ts_idx).OnlyEnforceIf(is_assigned)
         
         print("")
 
@@ -658,32 +682,40 @@ class CSP:
 
 
     def variablesToCourses(self):
-        for _, courses in self.variables.items():
-            for _, course in courses.items():
-                for _, course_details in course.items():
-                    
-                    # Retrieving the teacher
-                    assigned_teacher_index = self.solver.Value(course_details['teacher'])
+        """
+        Modified to use the group-subject teacher assignments
+        """
+        for group_name, subjects in self.variables.items():
+            for subject_name, courses in subjects.items():
+                # Get the assigned teacher for this group-subject pair
+                teacher_var = None
+                if group_name in self.teacher_assignments and subject_name in self.teacher_assignments[group_name]:
+                    teacher_var = self.teacher_assignments[group_name][subject_name]
+                    assigned_teacher_index = self.solver.Value(teacher_var)
                     assigned_teacher = self.university.teachers[assigned_teacher_index]
-                    
-                    # Retrieve the full Subject object based on the subject name
-                    subject_name = course_details['subject']
-                    subject = None
-                    # Assuming 'self.university.subjects' is a dictionary with subject names as keys
-                    for promo in self.university.promotions:
-                        for sub in promo.subjects:
-                            if sub.name == subject_name:
-                                subject = sub
-                                break
-                        if subject:
+                else:
+                    # Handle case where no teacher can teach this subject
+                    print(f"Warning: No teacher assignment for {subject_name} in group {group_name}")
+                    continue
+                
+                # Find the subject object
+                subject = None
+                for promo in self.university.promotions:
+                    for sub in promo.subjects:
+                        if sub.name == subject_name:
+                            subject = sub
                             break
-
+                    if subject:
+                        break
+                
+                # Convert all courses for this group-subject pair
+                for course_details in courses.values():
                     self.generated_courses.append(
-                        Course(self.university.timeslots[self.solver.value(course_details['timeslot'])], 
-                        Group(course_details['group']), 
-                        subject, 
-                        assigned_teacher, 
-                        self.university.rooms[self.solver.value(course_details['room'])])
+                        Course(self.university.timeslots[self.solver.Value(course_details['timeslot'])], 
+                              Group(course_details['group']), 
+                              subject, 
+                              assigned_teacher, 
+                              self.university.rooms[self.solver.Value(course_details['room'])])
                     )
 
         #for course in self.generated_courses:

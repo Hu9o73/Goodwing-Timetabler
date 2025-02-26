@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.2.4
+
+- Added a more visually pleasing output !
+    - Navigate and see groups, rooms and teachers schedules for each week, on an 'actual' timetable.
+
 ## v0.2.3
 
 - Added a soft constraint to unstack subjects.

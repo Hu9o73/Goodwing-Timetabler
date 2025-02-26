@@ -12,7 +12,7 @@ from collections import defaultdict
 from typing import Dict, List, Any
 
 class ChronometerCallback(cp_model.CpSolverSolutionCallback):
-    def __init__(self, model, conflict_penalties, test=False):
+    def __init__(self, model, conflict_penalties, balance_penalties=None, gap_penalties=None, test=False):
         super().__init__()
         self.start_time = time.time()
         self.running = True
@@ -23,25 +23,56 @@ class ChronometerCallback(cp_model.CpSolverSolutionCallback):
         self.thread.start()
         self.model = model
         self.conflict_penalties = conflict_penalties
+        self.balance_penalties = balance_penalties or []
+        self.gap_penalties = gap_penalties or []
         self.found_feasible = False
         self.continue_search = True
         self.max_cpu = 0
         self.max_ram = 0
         self.test = test
+        self.best_objective = float('inf')  # Track best objective value
+        self.solution_count = 0  # Track number of solutions found
 
     def update_timer(self):
         """Continuously update elapsed time every second until stopped."""
+        max_line_length = 0  # Track maximum line length
+        
         while self.running:
             if not self.paused:
                 elapsed = time.time() - self.start_time - self.accumulated_pause_time
                 process = psutil.Process(os.getpid())  # Get current process
                 ram_usage = process.memory_info().rss / (1024 * 1024)  # Convert to MB
-                cpu_usage = process.cpu_percent(interval=0.1)/10 # CPU usage (%)
-                if(ram_usage > self.max_ram):
+                cpu_usage = process.cpu_percent(interval=0.1)/10  # CPU usage (%)
+                
+                if ram_usage > self.max_ram:
                     self.max_ram = ram_usage
-                if(cpu_usage > self.max_cpu):
+                if cpu_usage > self.max_cpu:
                     self.max_cpu = cpu_usage
-                sys.stdout.write(f"\rElapsed time: {elapsed:.2f} s | CPU : {cpu_usage:.2f} % | RAM {ram_usage:.2f} Mb | Peak CPU : {self.max_cpu:.2f} % | Max RAM : {self.max_ram:.2f} Mb      ")
+                
+                # Display with current objective value if available
+                objective_info = f"| Objective: {self.best_objective if self.best_objective != float('inf') else 'N/A'}"
+                solutions_info = f"| Solutions: {self.solution_count}"
+                
+                # Create the status line
+                status_line = f"Elapsed time: {elapsed:.2f}s | CPU: {cpu_usage:.2f}% | RAM: {ram_usage:.2f}MB | Peak CPU: {self.max_cpu:.2f}% | Max RAM: {self.max_ram:.2f}MB {objective_info} {solutions_info}"
+                
+                # Ensure line is at least as long as previous lines by padding with spaces
+                if len(status_line) < max_line_length:
+                    status_line += ' ' * (max_line_length - len(status_line))
+                else:
+                    max_line_length = len(status_line)
+                
+                # Try to use shutil to get terminal width if available
+                try:
+                    import shutil
+                    term_width = shutil.get_terminal_size().columns
+                    # Clear the entire line
+                    clear_line = '\r' + ' ' * term_width + '\r'
+                    sys.stdout.write(clear_line + status_line)
+                except (ImportError, AttributeError):
+                    # Fall back to simpler method if shutil is not available
+                    sys.stdout.write('\r' + status_line)
+                
                 sys.stdout.flush()
             time.sleep(1)  # Update every second
 
@@ -58,11 +89,30 @@ class ChronometerCallback(cp_model.CpSolverSolutionCallback):
             self.paused = False
 
     def OnSolutionCallback(self):
-        """Update elapsed time when a solution is found."""
-        if not self.paused:
-            elapsed = time.time() - self.start_time - self.accumulated_pause_time
-            sys.stdout.write(f"\rElapsed time: {elapsed:.2f} s")
-            sys.stdout.flush()
+        """Update elapsed time and objective value when a solution is found."""
+        self.solution_count += 1
+        
+        # Calculate the objective value (sum of all penalties)
+        current_objective = 0
+        
+        # Sum conflict penalties
+        for penalty in self.conflict_penalties:
+            if isinstance(penalty, cp_model.IntVar):
+                current_objective += self.Value(penalty)
+            elif isinstance(penalty, cp_model.BoolVar):
+                current_objective += 1 if self.Value(penalty) else 0
+        
+        # Sum balance penalties
+        for penalty in self.balance_penalties:
+            current_objective += self.Value(penalty)
+        
+        # Sum gap penalties
+        for penalty in self.gap_penalties:
+            current_objective += self.Value(penalty)
+        
+        # Update best objective if this solution is better
+        if current_objective < self.best_objective:
+            self.best_objective = current_objective
         
         # Check if this solution has no conflicts
         has_conflicts = False
@@ -79,13 +129,13 @@ class ChronometerCallback(cp_model.CpSolverSolutionCallback):
         if not has_conflicts and not self.found_feasible:
             self.found_feasible = True
             self.pause_chronometer()
-            print("\nFound a feasible solution without conflicts!")
+            print(f"\nFound a feasible solution without conflicts! Objective value: {current_objective}")
             if self.test == True:
                 self.continue_search = False
                 self.StopSearch()
             else:
                 time.sleep(2)
-                user_input = input("Stop search and use this solution? (y/n): ")
+                user_input = input("\nStop search and use this solution? (y/n): ")
                 if user_input.lower() == 'y':
                     self.continue_search = False
                     self.StopSearch()
@@ -96,7 +146,7 @@ class ChronometerCallback(cp_model.CpSolverSolutionCallback):
         self.running = False  # Stop the loop
         self.thread.join(timeout=1)  # Ensure the thread stops (with a small timeout)
         elapsed = time.time() - self.start_time - self.accumulated_pause_time
-        print(f"\nTotal solving time: {elapsed:.2f} s")
+        print(f"\nTotal solving time: {elapsed:.2f}s | Final objective value: {self.best_objective}")
 
 class ScheduleIntelligence:
     def __init__(self, generated_courses: List[Course], university: University):
@@ -192,6 +242,122 @@ class ScheduleIntelligence:
                 'room': course.room.name
             })
     
+    def analyze_penalty_breakdown(self, solver, csp_obj):
+        """
+        Analyzes the breakdown of penalties in the final solution.
+        
+        Args:
+            solver: The CP-SAT solver after solving
+            csp_obj: The CSP object with penalty lists
+        """
+        # Initialize counters for each penalty type
+        conflict_penalty_sum = 0
+        balance_penalty_sum = 0
+        gap_penalty_sum = 0
+        
+        # Sum conflict penalties
+        print("\n4. PENALTY BREAKDOWN")
+        for penalty in csp_obj.conflict_penalties:
+            if isinstance(penalty, cp_model.IntVar):
+                conflict_penalty_sum += solver.Value(penalty)
+            elif isinstance(penalty, cp_model.BoolVar):
+                conflict_penalty_sum += 1 if solver.Value(penalty) else 0
+        
+        # Sum balance penalties
+        for penalty in csp_obj.balance_penalties:
+            balance_penalty_sum += solver.Value(penalty)
+        
+        # Sum gap penalties
+        for penalty in csp_obj.gap_penalties:
+            gap_penalty_sum += solver.Value(penalty)
+        
+        # Calculate total penalty
+        total_penalty = conflict_penalty_sum + balance_penalty_sum + gap_penalty_sum
+        
+        # Display breakdown
+        print(f"   - Conflict Penalties: {conflict_penalty_sum} ({(conflict_penalty_sum/total_penalty*100):.1f}% of total)")
+        print(f"   - Balance Penalties: {balance_penalty_sum} ({(balance_penalty_sum/total_penalty*100):.1f}% of total)")
+        print(f"   - Gap Penalties: {gap_penalty_sum} ({(gap_penalty_sum/total_penalty*100):.1f}% of total)")
+        print(f"   - Total Objective Value: {total_penalty}")
+        
+        # Display guidance
+        if gap_penalty_sum > 0:
+            print("\n   Gap Improvement Opportunities:")
+            self._analyze_gaps(csp_obj)
+        
+        # Print the end of the intelligence report after the penalty breakdown
+        print("\n==== END OF INTELLIGENCE REPORT ====")
+
+    def _analyze_gaps(self, csp_obj):
+        """
+        Analyzes where gaps occur most frequently to suggest improvements.
+        Uses exactly the same definition of gaps as the minimizeGaps function.
+        Lunch break slots are not counted as gaps.
+        """
+        # Group courses by day for each group
+        day_courses = defaultdict(lambda: defaultdict(list))
+        slots_per_day = len(self.university.time_ranges)
+        
+        # Define lunch break slot index (index % slots_per_day == 2)
+        lunch_slot = 2
+        
+        # Debug findings list
+        gap_findings = []
+        
+        for course in self.courses:
+            group_name = course.group.name
+            timeslot_idx = self.university.timeslots.index(course.timeslot)
+            day_idx = timeslot_idx // slots_per_day
+            slot_offset = timeslot_idx % slots_per_day
+            
+            # Skip lunch slots
+            if slot_offset == lunch_slot:
+                continue
+            
+            day_courses[group_name][day_idx].append(slot_offset)
+        
+        # Find days with gaps
+        for group_name, days in day_courses.items():
+            for day_idx, slots in days.items():
+                # Must have at least 2 scheduled courses to have gaps
+                if len(slots) >= 2:
+                    slots.sort()
+                    first_slot = min(slots)
+                    last_slot = max(slots)
+                    
+                    # Calculate the span (excluding lunch break)
+                    span = []
+                    for i in range(first_slot, last_slot + 1):
+                        if i != lunch_slot:  # Skip lunch slot
+                            span.append(i)
+                    
+                    # Calculate gaps (slots in span that aren't used)
+                    gaps = [i for i in span if i not in slots]
+                    
+                    if gaps:
+                        day_name = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"][day_idx % 7]
+                        week_num = day_idx // 7 + 1
+                        
+                        gap_times = []
+                        for gap in gaps:
+                            time_range = self.university.time_ranges[gap]
+                            start_time = time_range[0].strftime("%H:%M")
+                            end_time = time_range[1].strftime("%H:%M")
+                            gap_times.append(f"{start_time}-{end_time}")
+                        
+                        # Store finding
+                        gap_findings.append(f"Group {group_name}, Week {week_num} {day_name}: {len(gaps)} gap(s) at {', '.join(gap_times)}")
+        
+        # Print findings
+        if gap_findings:
+            print("\n   Gaps found in schedule (but not penalized):")
+            for finding in gap_findings:
+                print(f"     * {finding}")
+            print("\n   This could indicate that the gap minimization is not working correctly.")
+        else:
+            print("   No gaps found in the schedule - gap minimization is working correctly.")
+
+
     def generate_report(self):
         """Generate a comprehensive scheduling intelligence report."""
         print("\n==== SCHEDULING INTELLIGENCE REPORT ====")
@@ -241,7 +407,11 @@ class ScheduleIntelligence:
         for timeslot, count in sorted_timeslots[:3]:
             print(f"     * Timeslot {timeslot}: {count} courses")
         
-        print("\n==== END OF INTELLIGENCE REPORT ====")
+        # Note: The penalty breakdown (section 4) will be added here by the analyze_penalty_breakdown method
+        # which is called separately after this method. This ensures it's shown before the end of the report.
+        
+        # The end of the report is printed after the penalty breakdown is shown
+        # The analyze_penalty_breakdown method is responsible for calling this
 
 
 class CSP:
@@ -347,6 +517,9 @@ class CSP:
         print(" - Balanced subjects ...")
         # Balance individual subjects across weeks
         self.balanceSubjectsAcrossWeeks()
+        print(" - Minimizing gaps ...")
+        # Minimize gaps in daily schedules
+        self.minimizeGaps()
         
         # Combine different penalty types
         penalties = []
@@ -354,6 +527,8 @@ class CSP:
             penalties.extend(self.balance_penalties)
         if self.conflict_penalties:
             penalties.extend(self.conflict_penalties)
+        if self.gap_penalties:
+            penalties.extend(self.gap_penalties)
         
         # Minimize total penalties
         if penalties:
@@ -786,19 +961,130 @@ class CSP:
                     self.balance_penalties.append(above_target * 2)  # Higher weight
                     self.balance_penalties.append(below_target * 2)  # Higher weight
 
+    def minimizeGaps(self):
+        """
+        Add soft constraints to minimize gaps in daily schedules for each group.
+        A gap is defined as an empty timeslot between two scheduled courses on the same day,
+        EXCLUDING lunch break timeslots which are intended to be free.
+        Each day is treated separately - gaps don't span across days.
+        """
+        # Define the lunch break timeslot indices (11:45 -> 13:15), where index % 7 == 2
+        lunch_break_offset = 2  # Slot offset for lunch within a day
+        slots_per_day = len(self.university.time_ranges)
+        
+        # Calculate total lunch break slots
+        lunch_break_count = len(self.university.timeslots) // slots_per_day
+                
+        # Process each group separately
+        for group_name, subjects in self.variables.items():            
+            # Get all courses for this group
+            group_courses = []
+            for subject_courses in subjects.values():
+                group_courses.extend(subject_courses.values())
+            
+            # Calculate the number of days in the schedule
+            num_days = len(self.university.timeslots) // slots_per_day
+            
+            # For each day, process gaps
+            for day in range(num_days):
+                # Define direct gap detection for non-lunch slots
+                # A gap exists when there's an empty slot between two used slots
+                gap_penalties_day = []
+                
+                # Process each possible gap (slot that could be empty between two used slots)
+                for i in range(slots_per_day - 2):  # -2 because we need slots after this one
+                    # Skip if this is a lunch slot or the next slot is a lunch slot
+                    if i == lunch_break_offset or i + 1 == lunch_break_offset or i + 2 == lunch_break_offset:
+                        continue
+                    
+                    # Get absolute slot indices for this day
+                    day_start = day * slots_per_day
+                    current_slot = day_start + i
+                    next_slot = day_start + i + 1
+                    slot_after_next = day_start + i + 2
+                    
+                    # Check if current slot and slot_after_next are used, but next_slot is empty
+                    # This is the definition of a gap: [used][empty][used]
+                    
+                    # Create boolean indicators for each slot's usage
+                    current_used = self.model.NewBoolVar(f'current_used_{group_name}_{day}_{i}')
+                    next_empty = self.model.NewBoolVar(f'next_empty_{group_name}_{day}_{i}')
+                    after_next_used = self.model.NewBoolVar(f'after_next_used_{group_name}_{day}_{i}')
+                    
+                    # Check if current slot is used by any course
+                    current_course_indicators = []
+                    for course in group_courses:
+                        in_current = self.model.NewBoolVar(f'in_current_{group_name}_{day}_{i}_{id(course)}')
+                        self.model.Add(course['timeslot'] == current_slot).OnlyEnforceIf(in_current)
+                        self.model.Add(course['timeslot'] != current_slot).OnlyEnforceIf(in_current.Not())
+                        current_course_indicators.append(in_current)
+                    
+                    if current_course_indicators:
+                        self.model.AddBoolOr(current_course_indicators).OnlyEnforceIf(current_used)
+                        self.model.AddBoolAnd([ind.Not() for ind in current_course_indicators]).OnlyEnforceIf(current_used.Not())
+                    else:
+                        self.model.Add(current_used == 0)
+                    
+                    # Check if next slot is empty (not used by any course)
+                    next_course_indicators = []
+                    for course in group_courses:
+                        in_next = self.model.NewBoolVar(f'in_next_{group_name}_{day}_{i}_{id(course)}')
+                        self.model.Add(course['timeslot'] == next_slot).OnlyEnforceIf(in_next)
+                        self.model.Add(course['timeslot'] != next_slot).OnlyEnforceIf(in_next.Not())
+                        next_course_indicators.append(in_next)
+                    
+                    if next_course_indicators:
+                        self.model.AddBoolOr(next_course_indicators).OnlyEnforceIf(next_empty.Not())
+                        self.model.AddBoolAnd([ind.Not() for ind in next_course_indicators]).OnlyEnforceIf(next_empty)
+                    else:
+                        self.model.Add(next_empty == 1)
+                    
+                    # Check if slot after next is used by any course
+                    after_next_course_indicators = []
+                    for course in group_courses:
+                        in_after_next = self.model.NewBoolVar(f'in_after_next_{group_name}_{day}_{i}_{id(course)}')
+                        self.model.Add(course['timeslot'] == slot_after_next).OnlyEnforceIf(in_after_next)
+                        self.model.Add(course['timeslot'] != slot_after_next).OnlyEnforceIf(in_after_next.Not())
+                        after_next_course_indicators.append(in_after_next)
+                    
+                    if after_next_course_indicators:
+                        self.model.AddBoolOr(after_next_course_indicators).OnlyEnforceIf(after_next_used)
+                        self.model.AddBoolAnd([ind.Not() for ind in after_next_course_indicators]).OnlyEnforceIf(after_next_used.Not())
+                    else:
+                        self.model.Add(after_next_used == 0)
+                    
+                    # If all three conditions are true, we have a gap
+                    is_gap = self.model.NewBoolVar(f'is_gap_{group_name}_{day}_{i}')
+                    self.model.AddBoolAnd([current_used, next_empty, after_next_used]).OnlyEnforceIf(is_gap)
+                    self.model.AddBoolOr([current_used.Not(), next_empty.Not(), after_next_used.Not()]).OnlyEnforceIf(is_gap.Not())
+                    
+                    # Add penalty for this gap
+                    gap_penalties_day.append(is_gap)
+                
+                # If we found any potential gaps on this day, sum them up
+                if gap_penalties_day:
+                    # Count total gaps for this day
+                    day_gaps = self.model.NewIntVar(0, len(gap_penalties_day), f'day_gaps_{group_name}_{day}')
+                    self.model.Add(day_gaps == sum(gap_penalties_day))
+                    
+                    # Apply a weighted penalty to the objective function
+                    weighted_penalty = self.model.NewIntVar(0, 3 * len(gap_penalties_day), f'weighted_penalty_{group_name}_{day}')
+                    self.model.Add(weighted_penalty == 3 * day_gaps)
+                    self.gap_penalties.append(weighted_penalty)
+
     def solveCSP(self):
-        """Enhanced solve method with comprehensive conflict tracking."""
+        """Enhanced solve method with comprehensive conflict tracking and objective value monitoring."""
         start_time = time.time()
 
         # Configure solver for flexibility
         import multiprocessing
-        #int(multiprocessing.cpu_count()/2)
         if int(multiprocessing.cpu_count()) >= 4:
             worknum = 4
         else:
             worknum = multiprocessing.cpu_count()/2
-        self.solver.parameters.num_search_workers = worknum # int(multiprocessing.cpu_count()/2)
+        self.solver.parameters.num_search_workers = worknum
         print(f"Using {worknum} cores")
+        
         if(self.test):
             max_time = 1200
         else:
@@ -811,7 +1097,13 @@ class CSP:
         self.solver.parameters.max_time_in_seconds = max_time
 
         print(f"\nInstance generated, solving the CSP...")
-        self.chronometer = ChronometerCallback(self.model, self.conflict_penalties, self.test)
+        self.chronometer = ChronometerCallback(
+            self.model, 
+            self.conflict_penalties, 
+            self.balance_penalties, 
+            self.gap_penalties, 
+            self.test
+        )
         status = self.solver.Solve(self.model, self.chronometer)
         self.chronometer.running = False
 
@@ -834,6 +1126,8 @@ class CSP:
                 schedule_intel.analyze_conflicts()
                 schedule_intel.analyze_resource_utilization()
                 schedule_intel.generate_report()
+                # Add penalty breakdown analysis
+                schedule_intel.analyze_penalty_breakdown(self.solver, self)
             except Exception as e:
                 print(f"Error in schedule intelligence analysis: {e}")
                 import traceback
@@ -844,5 +1138,7 @@ class CSP:
             print(" -> You may want to modify the instance of your problem (adding more days...)")
         
         print(f"Computational time: {round((time.time()-start_time),3)} s")
+        print(f"Best objective value: {self.chronometer.best_objective}")
+        print(f"Total solutions found: {self.chronometer.solution_count}")
 
         return self.generated_courses

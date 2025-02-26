@@ -1,7 +1,8 @@
 import pandas as pd
+import os
 
 # ExcelScheduleManager
-from openpyxl import Workbook
+from openpyxl import Workbook, load_workbook
 from openpyxl.styles import PatternFill, Alignment, Font, Border, Side
 from openpyxl.utils import get_column_letter
 from openpyxl.worksheet.dimensions import ColumnDimension, DimensionHolder
@@ -12,18 +13,219 @@ from collections import defaultdict
 from csp import University
 
 def createCSV(gen_dir: str = './GoodwingTimetabler/UniversityInstance/'):
-    sheets = ['University', 'Timeslots', 'Promotions', 'Subjects', 'Teachers', 'Rooms']
-    dfs = []
-    for idx, sheet_name in enumerate(sheets):
-        dfs.append(pd.read_excel(gen_dir+'University.xlsx', sheet_name))
-        dfs[idx].to_csv(f'{gen_dir}csv/{sheet_name}.csv', index=False)
+    
+    xlsx_path = f'{gen_dir}University.xlsx'
 
-    # Print the CSV
-    #for df in dfs:
-    #    pd.set_option('display.max_columns', 1000)
-    #    pd.set_option('display.width', 1000)
-    #    print(df)
-    #    print('\n')
+    # Ensure the CSV directory exists
+    os.makedirs(f'{gen_dir}csv', exist_ok=True)
+    
+    # Define standard sheets to process
+    standard_sheets = ['University', 'Timeslots', 'Promotions', 'Subjects', 'Teachers', 'Rooms']
+    
+    # Process standard sheets
+    wb = load_workbook(xlsx_path)
+    for sheet_name in standard_sheets:
+        if sheet_name in wb.sheetnames:
+            print(f"Processing sheet: {sheet_name}")
+            df = pd.read_excel(xlsx_path, sheet_name)
+            df.to_csv(f'{gen_dir}csv/{sheet_name}.csv', index=False)
+    
+    # Process teacher availability if it exists
+    if 'TeacherAvailability' in wb.sheetnames:
+        print("Processing teacher availability data")
+        df = pd.read_excel(xlsx_path, 'TeacherAvailability')
+        df.to_csv(f'{gen_dir}csv/TeacherAvailability.csv', index=False)
+    else:
+        print("No teacher availability data")
+
+
+def init_template(gen_dir: str = './GoodwingTimetabler/UniversityInstance/', force_reset=True):
+    """
+    Initialize or reset the Excel template file with all required sheets,
+    including the teacher availability sheet.
+    
+    Parameters:
+    - gen_dir: str | Directory to create the template in
+    - force_reset: bool | If True, always create a new template even if one exists
+    """
+    output_path = f'{gen_dir}University.xlsx'
+    
+    # Create directory if it doesn't exist
+    os.makedirs(gen_dir, exist_ok=True)
+    
+    # Check if file exists and we need to overwrite
+    if not os.path.exists(output_path) or force_reset:
+        print(f"Creating new template at {output_path}")
+        wb = Workbook()
+        
+        # Remove the default sheet
+        if 'Sheet' in wb.sheetnames:
+            del wb['Sheet']
+        
+        # Create University sheet with basic settings
+        univ_sheet = wb.create_sheet(title='University')
+        univ_sheet.append(['Setting', 'Value'])
+        univ_sheet.append(['Name', 'ESILV'])
+        univ_sheet.append(['Start day', 6])
+        univ_sheet.append(['Start month', 1])
+        univ_sheet.append(['Start year', 2025])
+        univ_sheet.append(['Days', 14])
+        
+        # Create Timeslots sheet
+        ts_sheet = wb.create_sheet(title='Timeslots')
+        ts_sheet.append(['StartH', 'StartMin', 'EndH', 'EndMin'])
+        ts_sheet.append([8, 15, 9, 45])
+        ts_sheet.append([10, 0, 11, 30])
+        ts_sheet.append([11, 45, 13, 15])
+        ts_sheet.append([13, 30, 15, 0])
+        ts_sheet.append([15, 15, 16, 45])
+        ts_sheet.append([17, 0, 18, 30])
+        ts_sheet.append([18, 45, 20, 15])
+        
+        # Create Rooms sheet
+        rooms_sheet = wb.create_sheet(title='Rooms')
+        rooms_sheet.append(['Name', 'Type'])
+        rooms_sheet.append(['L101', 'default'])
+        rooms_sheet.append(['L102', 'default'])
+        rooms_sheet.append(['L103', 'default'])
+        rooms_sheet.append(['Online', 'default'])
+        
+        # Create Promotions sheet
+        promo_sheet = wb.create_sheet(title='Promotions')
+        promo_sheet.append(['A1', 'A2'])
+        promo_sheet.append(['TDA', 'TDA'])
+        
+        # Create Subjects sheet
+        subj_sheet = wb.create_sheet(title='Subjects')
+        subj_sheet.append(['Id', 'Name', 'Promotion', 'Hours', 'Color'])
+        # Add some sample subjects
+        subj_sheet.append(['UNI011', 'Basic Maths', 'A1', 12, 'FF5733'])
+        subj_sheet.append(['UNI012', 'Basic Physics', 'A1', 15, 'FF33A8'])
+        subj_sheet.append(['UNI013', 'Basic Informatics', 'A1', 12, '33FF57'])
+        subj_sheet.append(['UNI021', 'Advanced Maths', 'A2', 12, 'DC143C'])
+        subj_sheet.append(['UNI022', 'Advanced Physics', 'A2', 15, '8A2BE2'])
+        subj_sheet.append(['UNI023', 'Advanced Informatics', 'A2', 12, '00FA9A'])
+        
+        # Create Teachers sheet
+        teach_sheet = wb.create_sheet(title='Teachers')
+        teach_sheet.append(['Idt', 'First Name', 'Last Name', 'Subjects (séparés d\'un \'-\')'])
+        # Add some sample teachers
+        teach_sheet.append([0, 'Henri', 'Barbeau', 'UNI011-UNI021'])
+        teach_sheet.append([1, 'Timothé', 'Solé', 'UNI011-UNI021'])
+        teach_sheet.append([2, 'Renaud', 'Cerfbeer', 'UNI012-UNI022'])
+        teach_sheet.append([3, 'Christiane', 'Brunelle', 'UNI013-UNI023'])
+        teach_sheet.append([4, 'Constantin', 'Poussin', 'UNI012-UNI022'])
+        teach_sheet.append([5, 'Maurice', 'Vannier', 'UNI013-UNI023'])
+        
+        # Save the workbook
+        wb.save(output_path)
+        print(f"Created basic template at {output_path}")
+    else:
+        print(f"Using existing template at {output_path}")
+    
+    # Now add/update the availability sheet with the same sample data
+    create_availability_template(output_path, force_reset)
+
+def create_availability_template(output_path: str = './GoodwingTimetabler/UniversityInstance/University.xlsx', force_reset=True):
+    """
+    Creates or updates the University.xlsx template to include a TeacherAvailability sheet.
+    
+    Parameters:
+    - output_path: str | Path to the Excel file
+    - force_reset: bool | If True, recreate the sheet even if it exists
+    """
+    try:
+        # Try to load the existing workbook
+        wb = load_workbook(output_path)
+        
+        # Check if TeacherAvailability sheet already exists
+        if 'TeacherAvailability' in wb.sheetnames:
+            if force_reset:
+                # Remove the existing sheet
+                del wb['TeacherAvailability']
+                print("Recreating TeacherAvailability sheet")
+            else:
+                print("TeacherAvailability sheet already exists in the template.")
+                return
+        
+        # Load teacher and timeslot data to create the availability sheet
+        teachers_sheet = wb['Teachers'] if 'Teachers' in wb.sheetnames else None
+        timeslots_sheet = wb['Timeslots'] if 'Timeslots' in wb.sheetnames else None
+        
+        if not teachers_sheet or not timeslots_sheet:
+            print("Could not find Teachers or Timeslots sheets. Cannot create availability template.")
+            return
+        
+        # Create the new availability sheet
+        avail_sheet = wb.create_sheet(title='TeacherAvailability')
+        
+        # Get time ranges from Timeslots sheet
+        time_ranges = []
+        for row in timeslots_sheet.iter_rows(min_row=2, values_only=True):  # Skip header
+            if row[0] is not None and row[1] is not None and row[2] is not None and row[3] is not None:
+                start_time = f"{int(row[0])}:{str(int(row[1])).zfill(2)}"
+                end_time = f"{int(row[2])}:{str(int(row[3])).zfill(2)}"
+                time_ranges.append(f"{start_time}-{end_time}")
+        
+        # Create column headers for each day and time slot
+        days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+        
+        # First column is teacher ID
+        avail_sheet.cell(row=1, column=1, value="TeacherId")
+        
+        # Create headers for each day and time slot
+        col = 2
+        for day in days:
+            for time_range in time_ranges:
+                header = f"{day}_{time_range}"
+                avail_sheet.cell(row=1, column=col, value=header)
+                col += 1
+        
+        # Add teachers from Teachers sheet
+        row = 2
+        for teacher_row in teachers_sheet.iter_rows(min_row=2, values_only=True):  # Skip header
+            if teacher_row[0] is not None:  # Teacher ID
+                avail_sheet.cell(row=row, column=1, value=str(teacher_row[0]))
+                
+                # Set all slots to 1 (available) by default
+                for col in range(2, 2 + len(days) * len(time_ranges)):
+                    # Create a pattern of availability - for demonstration
+                    # Monday-Friday: Available for all slots
+                    # Saturday: Only morning slots
+                    # Sunday: No availability
+                    
+                    # Calculate which day and slot this column represents
+                    header_idx = col - 2  # 0-based index in the flattened day/time array
+                    day_idx = header_idx // len(time_ranges)  # Which day (0-6)
+                    time_idx = header_idx % len(time_ranges)  # Which timeslot (0-6)
+                    
+                    # Set availability based on the pattern
+                    if day_idx < 5:  # Mon-Fri
+                        value = 1
+                    elif day_idx == 5:  # Sat
+                        value = 1 if time_idx < 3 else 0  # Only morning slots
+                    else:  # Sun
+                        value = 0
+                    
+                    avail_sheet.cell(row=row, column=col, value=value)
+                
+                row += 1
+        
+        # Add formatting
+        for col in range(1, col):
+            column_letter = get_column_letter(col)
+            avail_sheet.column_dimensions[column_letter].width = 15 if col == 1 else 12
+        
+        # Add instructions at the top
+        instructions = avail_sheet.cell(row=row+1, column=1, value="Instructions: 1=Available, 0=Unavailable")
+        instructions.font = Font(bold=True)
+        
+        # Save the updated workbook
+        wb.save(output_path)
+        print(f"TeacherAvailability sheet added to {output_path}")
+        
+    except Exception as e:
+        print(f"Error creating TeacherAvailability template: {e}")
 
 class ExcelScheduleManager:
     def __init__(self, university: University, generated_courses):
@@ -240,7 +442,7 @@ class ExcelScheduleManager:
         
         # Save the workbook
         self.wb.save(output_path)
-        print(f"Basic timetable saved to {output_path}")
+        print(f"\nBasic timetable saved to {output_path}")
 
     def create_visual_timetable(self, output_path="./Outputs/excel/visual_timetable.xlsx"):
         """
@@ -594,4 +796,4 @@ class ExcelScheduleManager:
         
         # Save the workbook
         wb.save(output_path)
-        print(f"Visual timetable saved to {output_path}")
+        print(f"\nVisual timetable saved to {output_path}")

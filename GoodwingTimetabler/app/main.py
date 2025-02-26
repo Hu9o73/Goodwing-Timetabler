@@ -15,7 +15,7 @@ def run_test():
 
 def generateScheduleUsingCSP():
     print("app running...\n\n\n")
-    print("=========== Goodwing Timetabler v0.2.3 ===========\n\n")
+    print("=========== Goodwing Timetabler v0.2.4 ===========\n\n")
 
     # Create the university
     my_univ = generateUniv2("./Inputs/")
@@ -32,3 +32,4 @@ def outputSchedulesFromCSP(csp_solver: CSP):
     # Excel output
     excel_manager = ExcelScheduleManager(csp_solver.university, csp_solver.generated_courses)
     excel_manager.generate_excel_schedule('./Outputs/excel/schedule.xlsx')
+    excel_manager.create_visual_timetable('./Outputs/excel/visual_timetable.xlsx')

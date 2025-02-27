@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.3.1
+
+- Added a soft constraint to minimize the number of gaps between courses on the same day.
+- Added a number of found solutions tracker.
+- Added a penalties (objective value) tracker.
+    - Note: We're trying to minimize this, and remember that optimal is not necessarily perfect ! (You don't HAVE to reach 0 to have an optimal solution).
+
 ## v0.3.0
 
 - Added consistency regarding teacher assignement

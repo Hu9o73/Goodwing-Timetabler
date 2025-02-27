@@ -285,7 +285,13 @@ class ScheduleIntelligence:
             print("\n   Gap Improvement Opportunities:")
             self._analyze_gaps(csp_obj)
         
-        # Print the end of the intelligence report after the penalty breakdown
+        # Analyze online transitions
+        self.analyze_online_transitions(csp_obj)
+        
+        # Analyze late timeslots
+        self.analyze_late_slots(csp_obj)
+        
+        # Print the end of the intelligence report after all analysis
         print("\n==== END OF INTELLIGENCE REPORT ====")
 
     def _analyze_gaps(self, csp_obj):
@@ -357,6 +363,177 @@ class ScheduleIntelligence:
         else:
             print("   No gaps found in the schedule - gap minimization is working correctly.")
 
+    def analyze_online_transitions(self, csp_obj):
+        """
+        Analyzes the final schedule to identify any remaining online-to-physical transitions.
+        Adds a new section to the intelligence report with this information.
+        """
+        # Find the online room
+        online_room = None
+        for room in self.university.rooms:
+            if room.name.lower() == "online":
+                online_room = room
+                break
+        
+        if not online_room:
+            print("\n5. ONLINE-PHYSICAL TRANSITIONS")
+            print("   No online room found in the university instance.")
+            return
+        
+        print("\n5. ONLINE-PHYSICAL TRANSITIONS")
+        
+        # Group courses by group and day
+        group_day_courses = defaultdict(lambda: defaultdict(list))
+        slots_per_day = len(self.university.time_ranges)
+        
+        for course in self.courses:
+            group_name = course.group.name
+            timeslot_idx = self.university.timeslots.index(course.timeslot)
+            day_idx = timeslot_idx // slots_per_day
+            slot_within_day = timeslot_idx % slots_per_day
+            
+            # Add to appropriate group and day, sorted by timeslot
+            group_day_courses[group_name][day_idx].append((slot_within_day, course))
+        
+        # Track transitions
+        total_transitions = 0
+        transition_details = []
+        
+        # Check each group's daily schedule for transitions
+        for group_name, days in group_day_courses.items():
+            group_transitions = 0
+            
+            for day_idx, courses in days.items():
+                # Sort courses by timeslot within the day
+                sorted_courses = sorted(courses, key=lambda x: x[0])
+                
+                # Check for transitions
+                for i in range(len(sorted_courses) - 1):
+                    current_slot, current_course = sorted_courses[i]
+                    next_slot, next_course = sorted_courses[i + 1]
+                    
+                    # Only check consecutive slots
+                    if next_slot == current_slot + 1:
+                        current_is_online = current_course.room.name.lower() == "online"
+                        next_is_online = next_course.room.name.lower() == "online"
+                        
+                        # If there's a transition
+                        if current_is_online != next_is_online:
+                            total_transitions += 1
+                            group_transitions += 1
+                            
+                            # Determine the direction
+                            direction = "Online → Physical" if current_is_online else "Physical → Online"
+                            
+                            # Get day name
+                            day_of_week = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"][day_idx % 7]
+                            week_num = day_idx // 7 + 1
+                            
+                            # Format times
+                            current_time = f"{self.format_time(current_course.timeslot.start)}-{self.format_time(current_course.timeslot.end)}"
+                            next_time = f"{self.format_time(next_course.timeslot.start)}-{self.format_time(next_course.timeslot.end)}"
+                            
+                            # Add to details
+                            transition_details.append({
+                                'group': group_name,
+                                'day': f"Week {week_num} {day_of_week}",
+                                'direction': direction,
+                                'from_course': f"{current_course.subject.name} ({current_time})",
+                                'to_course': f"{next_course.subject.name} ({next_time})"
+                            })
+            
+            if group_transitions > 0:
+                print(f"   - Group {group_name}: {group_transitions} transitions")
+        
+        print(f"   - Total transitions in schedule: {total_transitions}")
+        
+        # If there are transitions, show details
+        if transition_details:
+            print("\n   Transition Details:")
+            for i, detail in enumerate(transition_details[:10], 1):  # Show only first 10 to avoid overwhelming
+                print(f"     {i}. {detail['group']} on {detail['day']}: {detail['direction']}")
+                print(f"        From: {detail['from_course']}")
+                print(f"        To:   {detail['to_course']}")
+            
+            if len(transition_details) > 10:
+                print(f"     ... and {len(transition_details) - 10} more transitions")
+        else:
+            print("   No transitions found - online courses are optimally grouped!")
+
+    def format_time(self, time_obj):
+        """Helper method to format time objects consistently"""
+        return time_obj.strftime("%H:%M")
+    
+    def analyze_late_slots(self, csp_obj):
+        """
+        Analyzes the schedule to identify courses scheduled in the last two timeslots of each day.
+        """
+        print("\n6. LATE TIMESLOT ANALYSIS")
+        
+        # Number of timeslots per day
+        slots_per_day = len(self.university.time_ranges)
+        
+        # Identify the last two timeslots of each day
+        late_slot_offsets = [slots_per_day - 2, slots_per_day - 1]
+        
+        # Group courses by late timeslots
+        late_courses = []
+        late_by_group = defaultdict(int)
+        
+        for course in self.courses:
+            timeslot_idx = self.university.timeslots.index(course.timeslot)
+            day_idx = timeslot_idx // slots_per_day
+            slot_offset = timeslot_idx % slots_per_day
+            
+            if slot_offset in late_slot_offsets:
+                late_courses.append(course)
+                late_by_group[course.group.name] += 1
+        
+        # Get the day names and times for better readability
+        day_names = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+        
+        # Get time ranges
+        last_slots_times = []
+        for offset in late_slot_offsets:
+            if offset < len(self.university.time_ranges):
+                time_range = self.university.time_ranges[offset]
+                start_time = time_range[0].strftime("%H:%M")
+                end_time = time_range[1].strftime("%H:%M")
+                last_slots_times.append(f"{start_time}-{end_time}")
+        
+        # Report statistics
+        total_courses = len(self.courses)
+        late_course_count = len(late_courses)
+        late_percentage = (late_course_count / total_courses * 100) if total_courses > 0 else 0
+        
+        print(f"   - Late timeslots: {', '.join(last_slots_times)}")
+        print(f"   - Courses in late timeslots: {late_course_count} ({late_percentage:.1f}% of all courses)")
+        
+        # Report by group
+        if late_by_group:
+            print("\n   Distribution by group:")
+            for group_name, count in sorted(late_by_group.items(), key=lambda x: x[1], reverse=True):
+                print(f"     - {group_name}: {count} late courses")
+        
+        # List the first few late courses as examples
+        if late_courses:
+            print("\n   Sample late courses:")
+            for i, course in enumerate(late_courses[:5]):
+                timeslot_idx = self.university.timeslots.index(course.timeslot)
+                day_idx = timeslot_idx // slots_per_day
+                day_name = day_names[day_idx % 7]
+                week_num = day_idx // 7 + 1
+                
+                time_str = f"{course.timeslot.start.strftime('%H:%M')}-{course.timeslot.end.strftime('%H:%M')}"
+                
+                print(f"     {i+1}. {course.subject.name} for {course.group.name}")
+                print(f"        Week {week_num} {day_name} at {time_str}")
+                print(f"        Room: {course.room.name}, Teacher: {course.teacher.first_name} {course.teacher.last_name}")
+            
+            if len(late_courses) > 5:
+                print(f"     ... and {len(late_courses) - 5} more late courses")
+        else:
+            print("   No courses scheduled in late timeslots!")
 
     def generate_report(self):
         """Generate a comprehensive scheduling intelligence report."""
@@ -520,6 +697,12 @@ class CSP:
         print(" - Minimizing gaps ...")
         # Minimize gaps in daily schedules
         self.minimizeGaps()
+        print(" - Minimizing campus returns after online classes ...")
+        # Minimize students having to return to campus after online classes
+        self.minimize_campus_returns()
+        print(" - Minimizing late timeslots ...")
+        # Minimize use of late timeslots
+        self.minimize_late_slots()
         
         # Combine different penalty types
         penalties = []
@@ -1104,6 +1287,182 @@ class CSP:
                         self.model.Add(weighted_penalty == 0).OnlyEnforceIf(is_gap.Not())
                         
                         self.gap_penalties.append(weighted_penalty)
+
+    def minimize_campus_returns(self):
+        """
+        Add soft constraints to minimize transitions between online and in-person classes.
+        For each group, penalize schedules where students have to switch between physical and
+        online classes within the same day.
+        """
+        # Identify the index of the "online" room
+        online_room_index = None
+        for i, room in enumerate(self.university.rooms):
+            if room.name.lower() == "online":
+                online_room_index = i
+                break
+        
+        # If there's no online room, this constraint doesn't apply
+        if online_room_index is None:
+            print(" - - No online room found, skipping online transition minimization")
+            return
+        
+        print(" - - Adding online-to-physical transition penalties...")
+        
+        # Number of timeslots per day
+        slots_per_day = len(self.university.time_ranges)
+        
+        group_counter = 0
+        # Process each group separately
+        for group_name, subjects in self.variables.items():
+            group_counter += 1
+            # Get all courses for this group
+            group_courses = []
+            for subject_courses in subjects.values():
+                group_courses.extend(subject_courses.values())
+            
+            # Calculate the number of days in the schedule
+            num_days = len(self.university.timeslots) // slots_per_day
+            
+            # For each day, check for transitions
+            for day in range(num_days):
+                print(f" - - Group {group_counter}, day {day+1}/{num_days}              ", end="\r")
+
+                day_start = day * slots_per_day
+                day_end = day_start + slots_per_day
+                
+                # Create variables for each timeslot indicating if it has an online course
+                is_online_slot = []
+                is_physical_slot = []
+                
+                for slot_offset in range(slots_per_day):
+                    absolute_slot = day_start + slot_offset
+                    
+                    # Variable for if this slot has an online course
+                    has_online = self.model.NewBoolVar(f'has_online_{group_name}_{day}_{slot_offset}')
+                    has_physical = self.model.NewBoolVar(f'has_physical_{group_name}_{day}_{slot_offset}')
+                    
+                    # Indicators for each course in this slot
+                    online_indicators = []
+                    physical_indicators = []
+                    
+                    for course in group_courses:
+                        in_slot = self.model.NewBoolVar(f'in_slot_{group_name}_{day}_{slot_offset}_{id(course)}')
+                        self.model.Add(course['timeslot'] == absolute_slot).OnlyEnforceIf(in_slot)
+                        self.model.Add(course['timeslot'] != absolute_slot).OnlyEnforceIf(in_slot.Not())
+                        
+                        # Check if course is online
+                        is_online = self.model.NewBoolVar(f'is_online_{group_name}_{day}_{slot_offset}_{id(course)}')
+                        self.model.Add(course['room'] == online_room_index).OnlyEnforceIf(is_online)
+                        self.model.Add(course['room'] != online_room_index).OnlyEnforceIf(is_online.Not())
+                        
+                        # Link the two conditions
+                        is_online_course = self.model.NewBoolVar(f'is_online_course_{group_name}_{day}_{slot_offset}_{id(course)}')
+                        self.model.AddBoolAnd([in_slot, is_online]).OnlyEnforceIf(is_online_course)
+                        self.model.AddBoolOr([in_slot.Not(), is_online.Not()]).OnlyEnforceIf(is_online_course.Not())
+                        
+                        is_physical_course = self.model.NewBoolVar(f'is_physical_course_{group_name}_{day}_{slot_offset}_{id(course)}')
+                        self.model.AddBoolAnd([in_slot, is_online.Not()]).OnlyEnforceIf(is_physical_course)
+                        self.model.AddBoolOr([in_slot.Not(), is_online]).OnlyEnforceIf(is_physical_course.Not())
+                        
+                        online_indicators.append(is_online_course)
+                        physical_indicators.append(is_physical_course)
+                    
+                    # Mark slot as having online course if any course is online
+                    if online_indicators:
+                        self.model.AddBoolOr(online_indicators).OnlyEnforceIf(has_online)
+                        self.model.AddBoolAnd([ind.Not() for ind in online_indicators]).OnlyEnforceIf(has_online.Not())
+                    else:
+                        self.model.Add(has_online == 0)
+                    
+                    # Mark slot as having physical course if any course is physical
+                    if physical_indicators:
+                        self.model.AddBoolOr(physical_indicators).OnlyEnforceIf(has_physical)
+                        self.model.AddBoolAnd([ind.Not() for ind in physical_indicators]).OnlyEnforceIf(has_physical.Not())
+                    else:
+                        self.model.Add(has_physical == 0)
+                    
+                    is_online_slot.append(has_online)
+                    is_physical_slot.append(has_physical)
+                
+                # Now detect transitions between consecutive slots
+                for i in range(slots_per_day - 1):
+                    # Transition from online to physical
+                    online_to_physical = self.model.NewBoolVar(f'online_to_physical_{group_name}_{day}_{i}')
+                    self.model.AddBoolAnd([is_online_slot[i], is_physical_slot[i+1]]).OnlyEnforceIf(online_to_physical)
+                    self.model.AddBoolOr([is_online_slot[i].Not(), is_physical_slot[i+1].Not()]).OnlyEnforceIf(online_to_physical.Not())
+                    
+                    # Transition from physical to online  
+                    physical_to_online = self.model.NewBoolVar(f'physical_to_online_{group_name}_{day}_{i}')
+                    self.model.AddBoolAnd([is_physical_slot[i], is_online_slot[i+1]]).OnlyEnforceIf(physical_to_online)
+                    self.model.AddBoolOr([is_physical_slot[i].Not(), is_online_slot[i+1].Not()]).OnlyEnforceIf(physical_to_online.Not())
+                    
+                    # Add penalty for each transition
+                    # High penalty weight (10) to prioritize this constraint
+                    transition_penalty = self.model.NewIntVar(0, 10, f'transition_penalty_{group_name}_{day}_{i}')
+                    self.model.Add(transition_penalty == 10).OnlyEnforceIf(online_to_physical)
+                    self.model.Add(transition_penalty == 10).OnlyEnforceIf(physical_to_online)
+                    self.model.Add(transition_penalty == 0).OnlyEnforceIf(online_to_physical.Not())
+                    self.model.Add(transition_penalty == 0).OnlyEnforceIf(physical_to_online.Not())
+                    
+                    # Add to balance penalties list
+                    self.balance_penalties.append(transition_penalty)
+        print("")
+
+    def minimize_late_slots(self):
+        """
+        Add soft constraints to discourage scheduling courses in the last two timeslots
+        of each day. This helps create more favorable schedules for students and teachers.
+        """
+        print(" - - Adding penalties for late timeslots...")
+        
+        # Number of timeslots per day
+        slots_per_day = len(self.university.time_ranges)
+        
+        # Identify the last two timeslots of each day (indexes for each day)
+        late_slot_offsets = [slots_per_day - 2, slots_per_day - 1]
+        
+        # Get all courses
+        all_courses = []
+        for group_subjects in self.variables.values():
+            for subject_courses in group_subjects.values():
+                all_courses.extend(subject_courses.values())
+        
+        # Calculate the number of days in the schedule
+        num_days = len(self.university.timeslots) // slots_per_day
+        
+        # For each course, check if it's in a late slot
+        for course in all_courses:
+            timeslot_var = course['timeslot']
+            
+            # Create a variable to track if this course is in a late slot
+            is_late_slot = self.model.NewBoolVar(f'is_late_slot_{id(course)}')
+            
+            # Create indicators for each possible late slot
+            late_indicators = []
+            for day in range(num_days):
+                for offset in late_slot_offsets:
+                    slot_idx = day * slots_per_day + offset
+                    
+                    # Course is in this late slot
+                    in_this_slot = self.model.NewBoolVar(f'in_late_slot_{day}_{offset}_{id(course)}')
+                    self.model.Add(timeslot_var == slot_idx).OnlyEnforceIf(in_this_slot)
+                    self.model.Add(timeslot_var != slot_idx).OnlyEnforceIf(in_this_slot.Not())
+                    
+                    late_indicators.append(in_this_slot)
+            
+            # Course is in a late slot if it's in any of the identified late slots
+            if late_indicators:
+                self.model.AddBoolOr(late_indicators).OnlyEnforceIf(is_late_slot)
+                self.model.AddBoolAnd([ind.Not() for ind in late_indicators]).OnlyEnforceIf(is_late_slot.Not())
+                
+                # Apply penalty for late slots
+                # Use weight of 8 - significant but less than campus returns (15) or room conflicts
+                late_penalty = self.model.NewIntVar(0, 8, f'late_slot_penalty_{id(course)}')
+                self.model.Add(late_penalty == 8).OnlyEnforceIf(is_late_slot)
+                self.model.Add(late_penalty == 0).OnlyEnforceIf(is_late_slot.Not())
+                
+                # Add to balance penalties
+                self.balance_penalties.append(late_penalty)
 
     def solveCSP(self):
         """Enhanced solve method with comprehensive conflict tracking and objective value monitoring."""

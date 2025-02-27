@@ -964,19 +964,18 @@ class CSP:
     def minimizeGaps(self):
         """
         Add soft constraints to minimize gaps in daily schedules for each group.
-        A gap is defined as an empty timeslot between two scheduled courses on the same day,
+        A gap is defined as one or more consecutive empty timeslots between scheduled courses on the same day,
         EXCLUDING lunch break timeslots which are intended to be free.
         Each day is treated separately - gaps don't span across days.
         """
-        # Define the lunch break timeslot indices (11:45 -> 13:15), where index % 7 == 2
-        lunch_break_offset = 2  # Slot offset for lunch within a day
+        # Number of timeslots per day
         slots_per_day = len(self.university.time_ranges)
         
-        # Calculate total lunch break slots
-        lunch_break_count = len(self.university.timeslots) // slots_per_day
-                
+        # Define the lunch break timeslot index within a day (11:45 -> 13:15), where slot index % slots_per_day == 2
+        lunch_break_offset = 2  # Slot offset for lunch within a day
+        
         # Process each group separately
-        for group_name, subjects in self.variables.items():            
+        for group_name, subjects in self.variables.items():
             # Get all courses for this group
             group_courses = []
             for subject_courses in subjects.values():
@@ -985,92 +984,126 @@ class CSP:
             # Calculate the number of days in the schedule
             num_days = len(self.university.timeslots) // slots_per_day
             
-            # For each day, process gaps
+            # For each day, create a binary variable for each slot indicating if it's used
             for day in range(num_days):
-                # Define direct gap detection for non-lunch slots
-                # A gap exists when there's an empty slot between two used slots
-                gap_penalties_day = []
+                day_start = day * slots_per_day
                 
-                # Process each possible gap (slot that could be empty between two used slots)
-                for i in range(slots_per_day - 2):  # -2 because we need slots after this one
-                    # Skip if this is a lunch slot or the next slot is a lunch slot
-                    if i == lunch_break_offset or i + 1 == lunch_break_offset or i + 2 == lunch_break_offset:
+                # Array of boolean variables indicating if each slot is used
+                slot_used = []
+                for slot_offset in range(slots_per_day):
+                    absolute_slot = day_start + slot_offset
+                    is_used = self.model.NewBoolVar(f'slot_used_{group_name}_{day}_{slot_offset}')
+                    
+                    # Check if this slot is used by any course
+                    slot_course_indicators = []
+                    for course in group_courses:
+                        in_slot = self.model.NewBoolVar(f'in_slot_{group_name}_{day}_{slot_offset}_{id(course)}')
+                        self.model.Add(course['timeslot'] == absolute_slot).OnlyEnforceIf(in_slot)
+                        self.model.Add(course['timeslot'] != absolute_slot).OnlyEnforceIf(in_slot.Not())
+                        slot_course_indicators.append(in_slot)
+                    
+                    if slot_course_indicators:
+                        self.model.AddBoolOr(slot_course_indicators).OnlyEnforceIf(is_used)
+                        self.model.AddBoolAnd([ind.Not() for ind in slot_course_indicators]).OnlyEnforceIf(is_used.Not())
+                    else:
+                        self.model.Add(is_used == 0)
+                    
+                    slot_used.append(is_used)
+                
+                # Now check for gaps in this day's schedule
+                gap_indicators = []
+                
+                # Skip the lunch break slot in our gap check
+                non_lunch_slots = [i for i in range(slots_per_day) if i != lunch_break_offset]
+                
+                # Find the first and last used slots of the day (excluding lunch)
+                first_used_slot = None
+                last_used_slot = None
+                
+                for i in non_lunch_slots:
+                    # Check if this is potentially the first used slot
+                    is_first = self.model.NewBoolVar(f'is_first_{group_name}_{day}_{i}')
+                    
+                    # This slot must be used to be first
+                    self.model.Add(slot_used[i] == 1).OnlyEnforceIf(is_first)
+                    
+                    # All slots before this must be unused
+                    before_unused = []
+                    for j in non_lunch_slots:
+                        if j < i:
+                            before_unused.append(slot_used[j].Not())
+                    
+                    if before_unused:
+                        self.model.AddBoolAnd(before_unused).OnlyEnforceIf(is_first)
+                        self.model.AddBoolOr([slot_used[i].Not()] + [slot_used[j] for j in non_lunch_slots if j < i]).OnlyEnforceIf(is_first.Not())
+                    else:
+                        # If there are no slots before, then this is the first slot if it's used
+                        self.model.Add(is_first == slot_used[i])
+                    
+                    # Similarly for the last used slot
+                    is_last = self.model.NewBoolVar(f'is_last_{group_name}_{day}_{i}')
+                    
+                    # This slot must be used to be last
+                    self.model.Add(slot_used[i] == 1).OnlyEnforceIf(is_last)
+                    
+                    # All slots after this must be unused
+                    after_unused = []
+                    for j in non_lunch_slots:
+                        if j > i:
+                            after_unused.append(slot_used[j].Not())
+                    
+                    if after_unused:
+                        self.model.AddBoolAnd(after_unused).OnlyEnforceIf(is_last)
+                        self.model.AddBoolOr([slot_used[i].Not()] + [slot_used[j] for j in non_lunch_slots if j > i]).OnlyEnforceIf(is_last.Not())
+                    else:
+                        # If there are no slots after, then this is the last slot if it's used
+                        self.model.Add(is_last == slot_used[i])
+                    
+                    # Store these variables for later use
+                    if first_used_slot is None:
+                        first_used_slot = is_first
+                    if last_used_slot is None:
+                        last_used_slot = is_last
+                
+                # Now check for each potential gap between first and last used slots
+                for i in range(len(non_lunch_slots) - 2):
+                    curr_idx = non_lunch_slots[i]
+                    next_idx = non_lunch_slots[i + 1]
+                    # Skip if next slot is not consecutive (lunch break in between)
+                    if next_idx != curr_idx + 1:
                         continue
                     
-                    # Get absolute slot indices for this day
-                    day_start = day * slots_per_day
-                    current_slot = day_start + i
-                    next_slot = day_start + i + 1
-                    slot_after_next = day_start + i + 2
+                    # Check if we have a transition from used to unused
+                    gap_start = self.model.NewBoolVar(f'gap_start_{group_name}_{day}_{curr_idx}')
+                    self.model.AddBoolAnd([slot_used[curr_idx], slot_used[next_idx].Not()]).OnlyEnforceIf(gap_start)
+                    self.model.AddBoolOr([slot_used[curr_idx].Not(), slot_used[next_idx]]).OnlyEnforceIf(gap_start.Not())
                     
-                    # Check if current slot and slot_after_next are used, but next_slot is empty
-                    # This is the definition of a gap: [used][empty][used]
-                    
-                    # Create boolean indicators for each slot's usage
-                    current_used = self.model.NewBoolVar(f'current_used_{group_name}_{day}_{i}')
-                    next_empty = self.model.NewBoolVar(f'next_empty_{group_name}_{day}_{i}')
-                    after_next_used = self.model.NewBoolVar(f'after_next_used_{group_name}_{day}_{i}')
-                    
-                    # Check if current slot is used by any course
-                    current_course_indicators = []
-                    for course in group_courses:
-                        in_current = self.model.NewBoolVar(f'in_current_{group_name}_{day}_{i}_{id(course)}')
-                        self.model.Add(course['timeslot'] == current_slot).OnlyEnforceIf(in_current)
-                        self.model.Add(course['timeslot'] != current_slot).OnlyEnforceIf(in_current.Not())
-                        current_course_indicators.append(in_current)
-                    
-                    if current_course_indicators:
-                        self.model.AddBoolOr(current_course_indicators).OnlyEnforceIf(current_used)
-                        self.model.AddBoolAnd([ind.Not() for ind in current_course_indicators]).OnlyEnforceIf(current_used.Not())
-                    else:
-                        self.model.Add(current_used == 0)
-                    
-                    # Check if next slot is empty (not used by any course)
-                    next_course_indicators = []
-                    for course in group_courses:
-                        in_next = self.model.NewBoolVar(f'in_next_{group_name}_{day}_{i}_{id(course)}')
-                        self.model.Add(course['timeslot'] == next_slot).OnlyEnforceIf(in_next)
-                        self.model.Add(course['timeslot'] != next_slot).OnlyEnforceIf(in_next.Not())
-                        next_course_indicators.append(in_next)
-                    
-                    if next_course_indicators:
-                        self.model.AddBoolOr(next_course_indicators).OnlyEnforceIf(next_empty.Not())
-                        self.model.AddBoolAnd([ind.Not() for ind in next_course_indicators]).OnlyEnforceIf(next_empty)
-                    else:
-                        self.model.Add(next_empty == 1)
-                    
-                    # Check if slot after next is used by any course
-                    after_next_course_indicators = []
-                    for course in group_courses:
-                        in_after_next = self.model.NewBoolVar(f'in_after_next_{group_name}_{day}_{i}_{id(course)}')
-                        self.model.Add(course['timeslot'] == slot_after_next).OnlyEnforceIf(in_after_next)
-                        self.model.Add(course['timeslot'] != slot_after_next).OnlyEnforceIf(in_after_next.Not())
-                        after_next_course_indicators.append(in_after_next)
-                    
-                    if after_next_course_indicators:
-                        self.model.AddBoolOr(after_next_course_indicators).OnlyEnforceIf(after_next_used)
-                        self.model.AddBoolAnd([ind.Not() for ind in after_next_course_indicators]).OnlyEnforceIf(after_next_used.Not())
-                    else:
-                        self.model.Add(after_next_used == 0)
-                    
-                    # If all three conditions are true, we have a gap
-                    is_gap = self.model.NewBoolVar(f'is_gap_{group_name}_{day}_{i}')
-                    self.model.AddBoolAnd([current_used, next_empty, after_next_used]).OnlyEnforceIf(is_gap)
-                    self.model.AddBoolOr([current_used.Not(), next_empty.Not(), after_next_used.Not()]).OnlyEnforceIf(is_gap.Not())
-                    
-                    # Add penalty for this gap
-                    gap_penalties_day.append(is_gap)
-                
-                # If we found any potential gaps on this day, sum them up
-                if gap_penalties_day:
-                    # Count total gaps for this day
-                    day_gaps = self.model.NewIntVar(0, len(gap_penalties_day), f'day_gaps_{group_name}_{day}')
-                    self.model.Add(day_gaps == sum(gap_penalties_day))
-                    
-                    # Apply a weighted penalty to the objective function
-                    weighted_penalty = self.model.NewIntVar(0, 3 * len(gap_penalties_day), f'weighted_penalty_{group_name}_{day}')
-                    self.model.Add(weighted_penalty == 3 * day_gaps)
-                    self.gap_penalties.append(weighted_penalty)
+                    # Find where the gap ends (transition from unused to used)
+                    for j in range(i + 1, len(non_lunch_slots) - 1):
+                        gap_end_idx = non_lunch_slots[j]
+                        gap_next_idx = non_lunch_slots[j + 1]
+                        # Skip if next slot is not consecutive
+                        if gap_next_idx != gap_end_idx + 1:
+                            continue
+                        
+                        gap_end = self.model.NewBoolVar(f'gap_end_{group_name}_{day}_{gap_end_idx}')
+                        self.model.AddBoolAnd([slot_used[gap_end_idx].Not(), slot_used[gap_next_idx]]).OnlyEnforceIf(gap_end)
+                        self.model.AddBoolOr([slot_used[gap_end_idx], slot_used[gap_next_idx].Not()]).OnlyEnforceIf(gap_end.Not())
+                        
+                        # If both gap_start and gap_end are true, we have a gap
+                        is_gap = self.model.NewBoolVar(f'is_gap_{group_name}_{day}_{curr_idx}_{gap_end_idx}')
+                        self.model.AddBoolAnd([gap_start, gap_end]).OnlyEnforceIf(is_gap)
+                        self.model.AddBoolOr([gap_start.Not(), gap_end.Not()]).OnlyEnforceIf(is_gap.Not())
+                        
+                        # Calculate gap size (number of empty slots)
+                        gap_size = gap_end_idx - curr_idx
+                        
+                        # Apply a weighted penalty based on gap size
+                        weighted_penalty = self.model.NewIntVar(0, 3 * gap_size, f'weighted_gap_{group_name}_{day}_{curr_idx}_{gap_end_idx}')
+                        self.model.Add(weighted_penalty == 3 * gap_size).OnlyEnforceIf(is_gap)
+                        self.model.Add(weighted_penalty == 0).OnlyEnforceIf(is_gap.Not())
+                        
+                        self.gap_penalties.append(weighted_penalty)
 
     def solveCSP(self):
         """Enhanced solve method with comprehensive conflict tracking and objective value monitoring."""

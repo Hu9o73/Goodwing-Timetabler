@@ -4,7 +4,7 @@ from util import ExcelScheduleManager, init_template, create_availability_templa
 
 def run_app():
     print("app running...\n\n\n")
-    print("=========== Goodwing Timetabler v0.3.1 ===========\n\n")
+    print("=========== Goodwing Timetabler v0.4.0 ===========\n\n")
 
     print("Choose an option:")
     print("[1] Start the AI solver")

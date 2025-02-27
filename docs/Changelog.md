@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.4.0
+
+- Added a soft constraint to minimize students having to go back to school after an online class.
+- Added a soft constraint to minimize late courses.
+    - A 'late course' is a course taking place on one of the last 2 timeslots of each day.
+
 ## v0.3.1
 
 - Added a soft constraint to minimize the number of gaps between courses on the same day.

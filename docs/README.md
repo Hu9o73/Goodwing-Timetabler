@@ -1,6 +1,6 @@
 ![Logo](./Images/Logos/Logo_v1_blanc.png)
 
-# Goodwing Timetabler | v 0.3.1
+# Goodwing Timetabler | v 0.4.0
 
 ## The Timetabling Problem: An Overview
 
@@ -135,7 +135,7 @@ The console displays a Schedule Intelligence report highlighting:
 |                                           |             | |
 | **Solving Methods**                       |             | |
 | CSP Solver                                | Yes         | Using OR-Tools  |
-| Genetic Algorithm, Neural Network         | No          | Not planned yet |
+| ML-powered CSP                            | Not yet     | |
 
 **Soft Constraint: The overlaps for teachers and rooms are treated as soft constraints to always yield a solution. It's then up to the user to identify where the overlaps occur by examining the Schedule Intelligence report in the terminal, and make manual adjustments if necessary.
 

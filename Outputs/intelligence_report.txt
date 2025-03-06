@@ -1,0 +1,66 @@
+==== SCHEDULING INTELLIGENCE REPORT ====
+
+
+1. CONFLICT ANALYSIS
+   - Room Overlaps: 6
+     * Timeslot 0, Room L103:
+       - Basic Informatics (A1_TDA)
+       - Advanced Engineering (A2_TDB)
+     * Timeslot 169, Room L102:
+       - Advanced Biology (A2_TDB)
+       - Quantum Mechanics (A3_TDC)
+     * Timeslot 203, Room L104:
+       - Advanced Physics (A2_TDB)
+       - Artificial Intelligence (A3_TDC)
+     * Timeslot 211, Room L106:
+       - Basic Informatics (A1_TDA)
+       - Quantum Mechanics (A3_TDC)
+     * Timeslot 297, Room L103:
+       - Basic Chemistry (A1_TDA)
+       - Mechanical Systems (A3_TDC)
+     * Timeslot 322, Room L104:
+       - Advanced Chemistry (A2_TDB)
+       - Applied Mathematics (A3_TDC)
+   - Teacher Overlaps: 1
+     * Timeslot 210, Teacher Paquin:
+       - Basic Biology (A1_TDA)
+       - Genetics (A3_TDC)
+
+2. RESOURCE UTILIZATION
+   Top 3 Most Used Rooms:
+     * L104: 59 courses
+     * L102: 33 courses
+     * L103: 33 courses
+   Top 3 Most Used Teachers:
+     * Vannier: 30 courses
+     * DAboville: 26 courses
+     * Barbeau: 24 courses
+
+3. TIMESLOT DISTRIBUTION
+   Top 3 Most Used Timeslots:
+     * Timeslot 217: 3 courses
+     * Timeslot 301: 3 courses
+     * Timeslot 259: 3 courses
+
+4. PENALTY BREAKDOWN
+   - Conflict Penalties: 7 (3.7% of total)
+   - Balance Penalties: 184 (96.3% of total)
+   - Gap Penalties: 0 (0.0% of total)
+   - Total Objective Value: 191
+
+5. ONLINE-PHYSICAL TRANSITIONS
+   - Total transitions in schedule: 0
+   No transitions found - online courses are optimally grouped!
+
+6. LATE TIMESLOT ANALYSIS
+   - Late timeslots: 17:00-18:30, 18:45-20:15
+   - Courses in late timeslots: 0 (0.0% of all courses)
+   No courses scheduled in late timeslots!
+
+
+==== END OF INTELLIGENCE REPORT ====
+
+
+Computational time: 508.572 s
+Best objective value: 191
+Total solutions found: 45

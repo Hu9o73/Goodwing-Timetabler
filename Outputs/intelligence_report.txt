@@ -1,0 +1,45 @@
+==== SCHEDULING INTELLIGENCE REPORT ====
+
+
+1. CONFLICT ANALYSIS
+   - Room Overlaps: 0
+   - Teacher Overlaps: 0
+
+2. RESOURCE UTILIZATION
+   Top 3 Most Used Rooms:
+     * L104: 58 courses
+     * L102: 35 courses
+     * L103: 32 courses
+   Top 3 Most Used Teachers:
+     * Brown: 30 courses
+     * Cochet: 28 courses
+     * Vannier: 28 courses
+
+3. TIMESLOT DISTRIBUTION
+   Top 3 Most Used Timeslots:
+     * Timeslot 218: 3 courses
+     * Timeslot 259: 3 courses
+     * Timeslot 253: 3 courses
+
+4. PENALTY BREAKDOWN
+   - Conflict Penalties: 0 (0.0% of total)
+   - Balance Penalties: 119 (100.0% of total)
+   - Gap Penalties: 0 (0.0% of total)
+   - Total Objective Value: 119
+
+5. ONLINE-PHYSICAL TRANSITIONS
+   - Total transitions in schedule: 0
+   No transitions found - online courses are optimally grouped!
+
+6. LATE TIMESLOT ANALYSIS
+   - Late timeslots: 17:00-18:30, 18:45-20:15
+   - Courses in late timeslots: 0 (0.0% of all courses)
+   No courses scheduled in late timeslots!
+
+
+==== END OF INTELLIGENCE REPORT ====
+
+
+Computational time: 756.752 s
+Best objective value: 119
+Total solutions found: 72

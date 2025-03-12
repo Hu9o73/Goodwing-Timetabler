@@ -1,6 +1,9 @@
 from myTests import test_csp_solver_performance
 from csp import *
 from util import ExcelScheduleManager, init_template, create_availability_template
+import os
+import subprocess
+
 
 def run_app():
     print("app running...\n\n\n")
@@ -46,6 +49,20 @@ def generateScheduleUsingCSP():
 
     # Output the generated schedules
     outputSchedulesFromCSP(scheduler)
+    
+    # Run the Plugin to send emails to teachers
+    print("\n\nSending emails to teachers...")
+    project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..")) # Find the root directory of the project dynamically
+    file_path_emails = os.path.join(project_root, "Plugins", "Send-Mail-To-Teachers") # Construct the correct absolute path
+    file_path_emails = file_path_emails.replace("\\", "/") # Ensure forward slashes for Windows compatibility
+    subprocess.run(["python", "send_emails.py"], cwd=file_path_emails) # Run send_emails.py from the correct directory
+
+    # Run the Frontend to visualize the intelligence report
+    print("\n\nDisplaying the intelligence report...")
+    file_path_frontend_ir = os.path.join(project_root, "Frontend", "Intelligence-Report") # Construct the correct absolute path
+    file_path_frontend_ir = file_path_frontend_ir.replace("\\", "/") # Ensure forward slashes for Windows compatibility
+    subprocess.run(["streamlit", "run", "display_intelligence_report.py"], cwd=file_path_frontend_ir) # Run display_intelligence_report.py from the correct directory
+
 
 
 def outputSchedulesFromCSP(csp_solver: CSP):

@@ -1,0 +1,356 @@
+==== SCHEDULING INTELLIGENCE REPORT ====
+
+
+1. CONFLICT ANALYSIS
+   - Room Overlaps: 94
+     * Timeslot 202, Room L101:
+       - Basic Maths (A1_TDA)
+       - Advanced Maths (A2_TDB)
+     * Timeslot 202, Room L101:
+       - Basic Maths (A1_TDA)
+       - Quantum Mechanics (A3_TDC)
+     * Timeslot 202, Room L101:
+       - Advanced Maths (A2_TDB)
+       - Quantum Mechanics (A3_TDC)
+     * Timeslot 203, Room L101:
+       - Basic Maths (A1_TDA)
+       - Advanced Maths (A2_TDB)
+     * Timeslot 203, Room L101:
+       - Basic Maths (A1_TDA)
+       - Quantum Mechanics (A3_TDC)
+     * Timeslot 203, Room L101:
+       - Advanced Maths (A2_TDB)
+       - Quantum Mechanics (A3_TDC)
+     * Timeslot 204, Room L101:
+       - Basic Maths (A1_TDA)
+       - Advanced Maths (A2_TDB)
+     * Timeslot 204, Room L101:
+       - Basic Maths (A1_TDA)
+       - Quantum Mechanics (A3_TDC)
+     * Timeslot 204, Room L101:
+       - Advanced Maths (A2_TDB)
+       - Quantum Mechanics (A3_TDC)
+     * Timeslot 206, Room L101:
+       - Basic Maths (A1_TDA)
+       - Advanced Maths (A2_TDB)
+     * Timeslot 206, Room L101:
+       - Basic Maths (A1_TDA)
+       - Quantum Mechanics (A3_TDC)
+     * Timeslot 206, Room L101:
+       - Advanced Maths (A2_TDB)
+       - Quantum Mechanics (A3_TDC)
+     * Timeslot 207, Room L101:
+       - Basic Maths (A1_TDA)
+       - Advanced Maths (A2_TDB)
+     * Timeslot 207, Room L101:
+       - Basic Maths (A1_TDA)
+       - Quantum Mechanics (A3_TDC)
+     * Timeslot 207, Room L101:
+       - Advanced Maths (A2_TDB)
+       - Quantum Mechanics (A3_TDC)
+     * Timeslot 208, Room L101:
+       - Basic Maths (A1_TDA)
+       - Advanced Maths (A2_TDB)
+     * Timeslot 208, Room L101:
+       - Basic Maths (A1_TDA)
+       - Applied Mathematics (A3_TDC)
+     * Timeslot 208, Room L101:
+       - Advanced Maths (A2_TDB)
+       - Applied Mathematics (A3_TDC)
+     * Timeslot 209, Room L101:
+       - Basic Maths (A1_TDA)
+       - Advanced Maths (A2_TDB)
+     * Timeslot 209, Room L101:
+       - Basic Maths (A1_TDA)
+       - Applied Mathematics (A3_TDC)
+     * Timeslot 209, Room L101:
+       - Advanced Maths (A2_TDB)
+       - Applied Mathematics (A3_TDC)
+     * Timeslot 210, Room L101:
+       - Basic Maths (A1_TDA)
+       - Advanced Maths (A2_TDB)
+     * Timeslot 210, Room L101:
+       - Basic Maths (A1_TDA)
+       - Applied Mathematics (A3_TDC)
+     * Timeslot 210, Room L101:
+       - Advanced Maths (A2_TDB)
+       - Applied Mathematics (A3_TDC)
+     * Timeslot 211, Room L101:
+       - Basic Physics (A1_TDA)
+       - Advanced Physics (A2_TDB)
+     * Timeslot 211, Room L101:
+       - Basic Physics (A1_TDA)
+       - Applied Mathematics (A3_TDC)
+     * Timeslot 211, Room L101:
+       - Advanced Physics (A2_TDB)
+       - Applied Mathematics (A3_TDC)
+     * Timeslot 217, Room L101:
+       - Basic Physics (A1_TDA)
+       - Advanced Physics (A2_TDB)
+     * Timeslot 217, Room L101:
+       - Basic Physics (A1_TDA)
+       - Applied Mathematics (A3_TDC)
+     * Timeslot 217, Room L101:
+       - Advanced Physics (A2_TDB)
+       - Applied Mathematics (A3_TDC)
+     * Timeslot 218, Room L101:
+       - Basic Physics (A1_TDA)
+       - Advanced Physics (A2_TDB)
+     * Timeslot 218, Room L101:
+       - Basic Physics (A1_TDA)
+       - Applied Mathematics (A3_TDC)
+     * Timeslot 218, Room L101:
+       - Advanced Physics (A2_TDB)
+       - Applied Mathematics (A3_TDC)
+     * Timeslot 224, Room L101:
+       - Basic Physics (A1_TDA)
+       - Advanced Physics (A2_TDB)
+     * Timeslot 224, Room L101:
+       - Basic Physics (A1_TDA)
+       - Applied Mathematics (A3_TDC)
+     * Timeslot 224, Room L101:
+       - Advanced Physics (A2_TDB)
+       - Applied Mathematics (A3_TDC)
+     * Timeslot 225, Room L101:
+       - Basic Physics (A1_TDA)
+       - Advanced Physics (A2_TDB)
+     * Timeslot 225, Room L101:
+       - Basic Physics (A1_TDA)
+       - Applied Mathematics (A3_TDC)
+     * Timeslot 225, Room L101:
+       - Advanced Physics (A2_TDB)
+       - Applied Mathematics (A3_TDC)
+     * Timeslot 227, Room L101:
+       - Basic Physics (A1_TDA)
+       - Advanced Physics (A2_TDB)
+     * Timeslot 227, Room L101:
+       - Basic Physics (A1_TDA)
+       - Applied Mathematics (A3_TDC)
+     * Timeslot 227, Room L101:
+       - Advanced Physics (A2_TDB)
+       - Applied Mathematics (A3_TDC)
+     * Timeslot 228, Room L101:
+       - Basic Physics (A1_TDA)
+       - Advanced Physics (A2_TDB)
+     * Timeslot 228, Room L101:
+       - Basic Physics (A1_TDA)
+       - Applied Mathematics (A3_TDC)
+     * Timeslot 228, Room L101:
+       - Advanced Physics (A2_TDB)
+       - Applied Mathematics (A3_TDC)
+     * Timeslot 245, Room L101:
+       - Basic Physics (A1_TDA)
+       - Advanced Physics (A2_TDB)
+     * Timeslot 245, Room L101:
+       - Basic Physics (A1_TDA)
+       - Applied Mathematics (A3_TDC)
+     * Timeslot 245, Room L101:
+       - Advanced Physics (A2_TDB)
+       - Applied Mathematics (A3_TDC)
+     * Timeslot 246, Room L101:
+       - Basic Physics (A1_TDA)
+       - Advanced Physics (A2_TDB)
+     * Timeslot 246, Room L101:
+       - Basic Physics (A1_TDA)
+       - Applied Mathematics (A3_TDC)
+     * Timeslot 246, Room L101:
+       - Advanced Physics (A2_TDB)
+       - Applied Mathematics (A3_TDC)
+     * Timeslot 248, Room L101:
+       - Basic Physics (A1_TDA)
+       - Advanced Physics (A2_TDB)
+     * Timeslot 248, Room L101:
+       - Basic Physics (A1_TDA)
+       - Applied Mathematics (A3_TDC)
+     * Timeslot 248, Room L101:
+       - Advanced Physics (A2_TDB)
+       - Applied Mathematics (A3_TDC)
+     * Timeslot 249, Room L101:
+       - Basic Informatics (A1_TDA)
+       - Advanced Informatics (A2_TDB)
+     * Timeslot 249, Room L101:
+       - Basic Informatics (A1_TDA)
+       - Applied Mathematics (A3_TDC)
+     * Timeslot 249, Room L101:
+       - Advanced Informatics (A2_TDB)
+       - Applied Mathematics (A3_TDC)
+     * Timeslot 250, Room L101:
+       - Basic Informatics (A1_TDA)
+       - Advanced Informatics (A2_TDB)
+     * Timeslot 250, Room L101:
+       - Basic Informatics (A1_TDA)
+       - Applied Mathematics (A3_TDC)
+     * Timeslot 250, Room L101:
+       - Advanced Informatics (A2_TDB)
+       - Applied Mathematics (A3_TDC)
+     * Timeslot 251, Room L101:
+       - Basic Informatics (A1_TDA)
+       - Advanced Engineering (A2_TDB)
+     * Timeslot 251, Room L101:
+       - Basic Informatics (A1_TDA)
+       - Applied Mathematics (A3_TDC)
+     * Timeslot 251, Room L101:
+       - Advanced Engineering (A2_TDB)
+       - Applied Mathematics (A3_TDC)
+     * Timeslot 252, Room L101:
+       - Basic Informatics (A1_TDA)
+       - Advanced Informatics (A2_TDB)
+     * Timeslot 253, Room L101:
+       - Basic Informatics (A1_TDA)
+       - Advanced Informatics (A2_TDB)
+     * Timeslot 255, Room L101:
+       - Basic Informatics (A1_TDA)
+       - Advanced Informatics (A2_TDB)
+     * Timeslot 256, Room L101:
+       - Basic Informatics (A1_TDA)
+       - Advanced Informatics (A2_TDB)
+     * Timeslot 257, Room L101:
+       - Basic Informatics (A1_TDA)
+       - Advanced Informatics (A2_TDB)
+     * Timeslot 258, Room L101:
+       - Basic Chemistry (A1_TDA)
+       - Advanced Informatics (A2_TDB)
+     * Timeslot 259, Room L101:
+       - Basic Chemistry (A1_TDA)
+       - Advanced Chemistry (A2_TDB)
+     * Timeslot 260, Room L101:
+       - Basic Chemistry (A1_TDA)
+       - Advanced Chemistry (A2_TDB)
+     * Timeslot 266, Room L101:
+       - Basic Chemistry (A1_TDA)
+       - Advanced Chemistry (A2_TDB)
+     * Timeslot 267, Room L101:
+       - Basic Chemistry (A1_TDA)
+       - Advanced Chemistry (A2_TDB)
+     * Timeslot 273, Room L101:
+       - Basic Chemistry (A1_TDA)
+       - Advanced Chemistry (A2_TDB)
+     * Timeslot 274, Room L101:
+       - Basic Chemistry (A1_TDA)
+       - Advanced Chemistry (A2_TDB)
+     * Timeslot 276, Room L101:
+       - Basic Chemistry (A1_TDA)
+       - Advanced Biology (A2_TDB)
+     * Timeslot 277, Room L101:
+       - Basic Chemistry (A1_TDA)
+       - Advanced Chemistry (A2_TDB)
+     * Timeslot 294, Room L101:
+       - Basic Chemistry (A1_TDA)
+       - Advanced Chemistry (A2_TDB)
+     * Timeslot 295, Room L101:
+       - Basic Biology (A1_TDA)
+       - Advanced Biology (A2_TDB)
+     * Timeslot 297, Room L101:
+       - Basic Biology (A1_TDA)
+       - Advanced Biology (A2_TDB)
+     * Timeslot 298, Room L101:
+       - Basic Biology (A1_TDA)
+       - Advanced Biology (A2_TDB)
+     * Timeslot 299, Room L101:
+       - Basic Biology (A1_TDA)
+       - Advanced Biology (A2_TDB)
+     * Timeslot 300, Room L101:
+       - Basic Biology (A1_TDA)
+       - Advanced Biology (A2_TDB)
+     * Timeslot 301, Room L101:
+       - Basic Biology (A1_TDA)
+       - Advanced Biology (A2_TDB)
+     * Timeslot 302, Room L101:
+       - Basic Engineering (A1_TDA)
+       - Advanced Biology (A2_TDB)
+     * Timeslot 304, Room L101:
+       - Basic Engineering (A1_TDA)
+       - Advanced Engineering (A2_TDB)
+     * Timeslot 305, Room L101:
+       - Basic Engineering (A1_TDA)
+       - Advanced Engineering (A2_TDB)
+     * Timeslot 306, Room L101:
+       - Basic Engineering (A1_TDA)
+       - Advanced Engineering (A2_TDB)
+     * Timeslot 307, Room L101:
+       - Basic Engineering (A1_TDA)
+       - Advanced Engineering (A2_TDB)
+     * Timeslot 308, Room L101:
+       - Basic Engineering (A1_TDA)
+       - Advanced Engineering (A2_TDB)
+     * Timeslot 309, Room L101:
+       - Basic Engineering (A1_TDA)
+       - Advanced Engineering (A2_TDB)
+     * Timeslot 315, Room L101:
+       - Basic Engineering (A1_TDA)
+       - Advanced Engineering (A2_TDB)
+     * Timeslot 316, Room L101:
+       - Basic Engineering (A1_TDA)
+       - Advanced Engineering (A2_TDB)
+     * Timeslot 322, Room L101:
+       - Basic Engineering (A1_TDA)
+       - Advanced Engineering (A2_TDB)
+   - Teacher Overlaps: 3
+     * Timeslot 208, Teacher Solé:
+       - Advanced Maths (A2_TDB)
+       - Applied Mathematics (A3_TDC)
+     * Timeslot 209, Teacher Solé:
+       - Advanced Maths (A2_TDB)
+       - Applied Mathematics (A3_TDC)
+     * Timeslot 210, Teacher Solé:
+       - Advanced Maths (A2_TDB)
+       - Applied Mathematics (A3_TDC)
+
+2. RESOURCE UTILIZATION
+   Top 3 Most Used Rooms:
+     * L101: 210 courses
+   Top 3 Most Used Teachers:
+     * Doe: 30 courses
+     * Cerfbeer: 28 courses
+     * Vannier: 28 courses
+
+3. TIMESLOT DISTRIBUTION
+   Top 3 Most Used Timeslots:
+     * Timeslot 202: 3 courses
+     * Timeslot 203: 3 courses
+     * Timeslot 204: 3 courses
+
+4. PENALTY BREAKDOWN
+   - Conflict Penalties: 97 (11.7% of total)
+   - Balance Penalties: 734 (88.3% of total)
+   - Gap Penalties: 0 (0.0% of total)
+   - Total Objective Value: 831
+
+5. ONLINE-PHYSICAL TRANSITIONS
+   - Total transitions in schedule: 0
+   No transitions found - online courses are optimally grouped!
+
+6. LATE TIMESLOT ANALYSIS
+   - Late timeslots: 17:00-18:30, 18:45-20:15
+   - Courses in late timeslots: 44 (21.0% of all courses)
+
+   Distribution by group:
+     - A3_TDC: 22 late courses
+     - A1_TDA: 11 late courses
+     - A2_TDB: 11 late courses
+
+   Sample late courses:
+     1. Basic Maths for A1_TDA
+        Week 5 Monday at 18:45-20:15
+        Room: L101, Teacher: Ilan Zini
+     2. Basic Maths for A1_TDA
+        Week 5 Tuesday at 17:00-18:30
+        Room: L101, Teacher: Ilan Zini
+     3. Basic Maths for A1_TDA
+        Week 5 Tuesday at 18:45-20:15
+        Room: L101, Teacher: Ilan Zini
+     4. Basic Informatics for A1_TDA
+        Week 6 Monday at 17:00-18:30
+        Room: L101, Teacher: Henry DAboville
+     5. Basic Informatics for A1_TDA
+        Week 6 Monday at 18:45-20:15
+        Room: L101, Teacher: Henry DAboville
+     ... and 39 more late courses
+
+
+==== END OF INTELLIGENCE REPORT ====
+
+
+Computational time: 207.797 s
+Best objective value: 831
+Total solutions found: 10

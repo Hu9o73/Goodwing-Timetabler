@@ -168,6 +168,9 @@ class ScheduleIntelligence:
                 'by_group': defaultdict(list)
             }
         }
+        self.output_dir = "Outputs"
+        self.file_name = "intelligence_report.txt"
+        self.file_path = os.path.join(self.output_dir, self.file_name)
     
     def analyze_conflicts(self):
         """Detect and log scheduling conflicts."""
@@ -257,6 +260,7 @@ class ScheduleIntelligence:
         
         # Sum conflict penalties
         print("\n4. PENALTY BREAKDOWN")
+        self.append_to_report("\n\n4. PENALTY BREAKDOWN")
         for penalty in csp_obj.conflict_penalties:
             if isinstance(penalty, cp_model.IntVar):
                 conflict_penalty_sum += solver.Value(penalty)
@@ -276,13 +280,18 @@ class ScheduleIntelligence:
         
         # Display breakdown
         print(f"   - Conflict Penalties: {conflict_penalty_sum} ({(conflict_penalty_sum/total_penalty*100):.1f}% of total)")
+        self.append_to_report(f"\n   - Conflict Penalties: {conflict_penalty_sum} ({(conflict_penalty_sum/total_penalty*100):.1f}% of total)")
         print(f"   - Balance Penalties: {balance_penalty_sum} ({(balance_penalty_sum/total_penalty*100):.1f}% of total)")
+        self.append_to_report(f"\n   - Balance Penalties: {balance_penalty_sum} ({(balance_penalty_sum/total_penalty*100):.1f}% of total)")
         print(f"   - Gap Penalties: {gap_penalty_sum} ({(gap_penalty_sum/total_penalty*100):.1f}% of total)")
+        self.append_to_report(f"\n   - Gap Penalties: {gap_penalty_sum} ({(gap_penalty_sum/total_penalty*100):.1f}% of total)")
         print(f"   - Total Objective Value: {total_penalty}")
+        self.append_to_report(f"\n   - Total Objective Value: {total_penalty}")
         
         # Display guidance
         if gap_penalty_sum > 0:
             print("\n   Gap Improvement Opportunities:")
+            self.append_to_report("\n\n   Gap Improvement Opportunities:")
             self._analyze_gaps(csp_obj)
         
         # Analyze online transitions
@@ -293,6 +302,7 @@ class ScheduleIntelligence:
         
         # Print the end of the intelligence report after all analysis
         print("\n==== END OF INTELLIGENCE REPORT ====")
+        self.append_to_report("\n\n\n==== END OF INTELLIGENCE REPORT ====")
 
     def _analyze_gaps(self, csp_obj):
         """
@@ -357,11 +367,15 @@ class ScheduleIntelligence:
         # Print findings
         if gap_findings:
             print("\n   Gaps found in schedule (but not penalized):")
+            self.append_to_report("\n\n   Gaps found in schedule (but not penalized):")
             for finding in gap_findings:
                 print(f"     * {finding}")
+                self.append_to_report(f"\n     * {finding}")
             print("\n   This could indicate that the gap minimization is not working correctly.")
+            self.append_to_report("\n\n   This could indicate that the gap minimization is not working correctly.")
         else:
             print("   No gaps found in the schedule - gap minimization is working correctly.")
+            self.append_to_report("\n   No gaps found in the schedule - gap minimization is working correctly.")
 
     def analyze_online_transitions(self, csp_obj):
         """
@@ -377,10 +391,13 @@ class ScheduleIntelligence:
         
         if not online_room:
             print("\n5. ONLINE-PHYSICAL TRANSITIONS")
+            self.append_to_report("\n\n5. ONLINE-PHYSICAL TRANSITIONS")
             print("   No online room found in the university instance.")
+            self.append_to_report("\n   No online room found in the university instance.")
             return
         
         print("\n5. ONLINE-PHYSICAL TRANSITIONS")
+        self.append_to_report("\n\n5. ONLINE-PHYSICAL TRANSITIONS")
         
         # Group courses by group and day
         group_day_courses = defaultdict(lambda: defaultdict(list))
@@ -444,21 +461,29 @@ class ScheduleIntelligence:
             
             if group_transitions > 0:
                 print(f"   - Group {group_name}: {group_transitions} transitions")
+                self.append_to_report(f"\n   - Group {group_name}: {group_transitions} transitions")
         
         print(f"   - Total transitions in schedule: {total_transitions}")
+        self.append_to_report(f"\n   - Total transitions in schedule: {total_transitions}")
         
         # If there are transitions, show details
         if transition_details:
             print("\n   Transition Details:")
+            self.append_to_report("\n\n   Transition Details:")
             for i, detail in enumerate(transition_details[:10], 1):  # Show only first 10 to avoid overwhelming
                 print(f"     {i}. {detail['group']} on {detail['day']}: {detail['direction']}")
+                self.append_to_report(f"\n     {i}. {detail['group']} on {detail['day']}: {detail['direction']}")
                 print(f"        From: {detail['from_course']}")
+                self.append_to_report(f"\n        From: {detail['from_course']}")
                 print(f"        To:   {detail['to_course']}")
+                self.append_to_report(f"\n        To:   {detail['to_course']}")
             
             if len(transition_details) > 10:
                 print(f"     ... and {len(transition_details) - 10} more transitions")
+                self.append_to_report(f"\n     ... and {len(transition_details) - 10} more transitions")
         else:
             print("   No transitions found - online courses are optimally grouped!")
+            self.append_to_report("\n   No transitions found - online courses are optimally grouped!")
 
     def format_time(self, time_obj):
         """Helper method to format time objects consistently"""
@@ -469,6 +494,7 @@ class ScheduleIntelligence:
         Analyzes the schedule to identify courses scheduled in the last two timeslots of each day.
         """
         print("\n6. LATE TIMESLOT ANALYSIS")
+        self.append_to_report("\n\n6. LATE TIMESLOT ANALYSIS")
         
         # Number of timeslots per day
         slots_per_day = len(self.university.time_ranges)
@@ -507,17 +533,22 @@ class ScheduleIntelligence:
         late_percentage = (late_course_count / total_courses * 100) if total_courses > 0 else 0
         
         print(f"   - Late timeslots: {', '.join(last_slots_times)}")
+        self.append_to_report(f"\n   - Late timeslots: {', '.join(last_slots_times)}")
         print(f"   - Courses in late timeslots: {late_course_count} ({late_percentage:.1f}% of all courses)")
+        self.append_to_report(f"\n   - Courses in late timeslots: {late_course_count} ({late_percentage:.1f}% of all courses)")
         
         # Report by group
         if late_by_group:
             print("\n   Distribution by group:")
+            self.append_to_report("\n\n   Distribution by group:")
             for group_name, count in sorted(late_by_group.items(), key=lambda x: x[1], reverse=True):
                 print(f"     - {group_name}: {count} late courses")
+                self.append_to_report(f"\n     - {group_name}: {count} late courses")
         
         # List the first few late courses as examples
         if late_courses:
             print("\n   Sample late courses:")
+            self.append_to_report("\n\n   Sample late courses:")
             for i, course in enumerate(late_courses[:5]):
                 timeslot_idx = self.university.timeslots.index(course.timeslot)
                 day_idx = timeslot_idx // slots_per_day
@@ -527,35 +558,63 @@ class ScheduleIntelligence:
                 time_str = f"{course.timeslot.start.strftime('%H:%M')}-{course.timeslot.end.strftime('%H:%M')}"
                 
                 print(f"     {i+1}. {course.subject.name} for {course.group.name}")
+                self.append_to_report(f"\n     {i+1}. {course.subject.name} for {course.group.name}")
                 print(f"        Week {week_num} {day_name} at {time_str}")
+                self.append_to_report(f"\n        Week {week_num} {day_name} at {time_str}")
                 print(f"        Room: {course.room.name}, Teacher: {course.teacher.first_name} {course.teacher.last_name}")
+                self.append_to_report(f"\n        Room: {course.room.name}, Teacher: {course.teacher.first_name} {course.teacher.last_name}")
             
             if len(late_courses) > 5:
                 print(f"     ... and {len(late_courses) - 5} more late courses")
+                self.append_to_report(f"\n     ... and {len(late_courses) - 5} more late courses")
         else:
             print("   No courses scheduled in late timeslots!")
+            self.append_to_report("\n   No courses scheduled in late timeslots!")
+
+
+
+    def append_to_report(self, text):
+        """Appends text to the intelligence_report.txt file inside Outputs/"""
+        with open(self.file_path, "a") as file:  # "a" mode appends without overwriting
+            file.write(text)  # Ensure new lines for readability
+
 
     def generate_report(self):
         """Generate a comprehensive scheduling intelligence report."""
+
+        # Clear the intelligence_report.txt file at the beginning of execution
+        with open(self.file_path, "w") as file:
+            file.write("")
+
         print("\n==== SCHEDULING INTELLIGENCE REPORT ====")
-        
+        self.append_to_report("==== SCHEDULING INTELLIGENCE REPORT ====")
+
         # Conflict Summary
         print("\n1. CONFLICT ANALYSIS")
+        self.append_to_report("\n\n\n1. CONFLICT ANALYSIS")
         print(f"   - Room Overlaps: {len(self.intel['conflicts']['room_overlaps'])}")
+        self.append_to_report(f"\n   - Room Overlaps: {len(self.intel['conflicts']['room_overlaps'])}")
         for overlap in self.intel['conflicts']['room_overlaps']:
             print(f"     * Timeslot {overlap['timeslot']}, Room {overlap['room']}:")
+            self.append_to_report(f"\n     * Timeslot {overlap['timeslot']}, Room {overlap['room']}:")
             for course in overlap['courses']:
                 print(f"       - {course['subject']} ({course['group']})")
+                self.append_to_report(f"\n       - {course['subject']} ({course['group']})")
         
         print(f"   - Teacher Overlaps: {len(self.intel['conflicts']['teacher_overlaps'])}")
+        self.append_to_report(f"\n   - Teacher Overlaps: {len(self.intel['conflicts']['teacher_overlaps'])}")
         for overlap in self.intel['conflicts']['teacher_overlaps']:
             print(f"     * Timeslot {overlap['timeslot']}, Teacher {overlap['teacher']}:")
+            self.append_to_report(f"\n     * Timeslot {overlap['timeslot']}, Teacher {overlap['teacher']}:")
             for course in overlap['courses']:
                 print(f"       - {course['subject']} ({course['group']})")
+                self.append_to_report(f"\n       - {course['subject']} ({course['group']})")
         
         # Resource Utilization
         print("\n2. RESOURCE UTILIZATION")
+        self.append_to_report("\n\n2. RESOURCE UTILIZATION")
         print("   Top 3 Most Used Rooms:")
+        self.append_to_report("\n   Top 3 Most Used Rooms:")
         room_usage = sorted(
             self.intel['resource_utilization']['rooms'].items(), 
             key=lambda x: len(x[1]), 
@@ -563,8 +622,10 @@ class ScheduleIntelligence:
         )[:3]
         for room, courses in room_usage:
             print(f"     * {room}: {len(courses)} courses")
+            self.append_to_report(f"\n     * {room}: {len(courses)} courses")
         
         print("   Top 3 Most Used Teachers:")
+        self.append_to_report("\n   Top 3 Most Used Teachers:")
         teacher_usage = sorted(
             self.intel['resource_utilization']['teachers'].items(), 
             key=lambda x: len(x[1]), 
@@ -572,17 +633,21 @@ class ScheduleIntelligence:
         )[:3]
         for teacher, courses in teacher_usage:
             print(f"     * {teacher}: {len(courses)} courses")
+            self.append_to_report(f"\n     * {teacher}: {len(courses)} courses")
         
         # Timeslot Distribution
         print("\n3. TIMESLOT DISTRIBUTION")
+        self.append_to_report("\n\n3. TIMESLOT DISTRIBUTION")
         sorted_timeslots = sorted(
             self.intel['resource_utilization']['timeslots'].items(), 
             key=lambda x: x[1], 
             reverse=True
         )
         print("   Top 3 Most Used Timeslots:")
+        self.append_to_report("\n   Top 3 Most Used Timeslots:")
         for timeslot, count in sorted_timeslots[:3]:
             print(f"     * Timeslot {timeslot}: {count} courses")
+            self.append_to_report(f"\n     * Timeslot {timeslot}: {count} courses")
         
         # Note: The penalty breakdown (section 4) will be added here by the analyze_penalty_breakdown method
         # which is called separately after this method. This ensures it's shown before the end of the report.
@@ -602,6 +667,10 @@ class CSP:
         self.chronometer = None
         self.test = test
 
+        self.output_dir = "Outputs"
+        self.file_name = "intelligence_report.txt"
+        self.file_path = os.path.join(self.output_dir, self.file_name)
+
         # Store objective terms
         self.gap_penalties = []  # For storing gap penalties
         self.balance_penalties = []  # For storing balance penalties
@@ -616,6 +685,12 @@ class CSP:
         self.createSoftConstraints()
         print("Created the constraints")
         self.solveCSP()
+
+
+    def append_to_report(self, text):
+        """Appends text to the intelligence_report.txt file inside Outputs/"""
+        with open(self.file_path, "a") as file:  # "a" mode appends without overwriting
+            file.write(text)  # Ensure new lines for readability
 
     def createVariables(self):
         overall_course_idx = 0
@@ -1529,8 +1604,11 @@ class CSP:
             print("If time limit wasn't reached, this might mean that the instance is inconsistent and that no solution can be found !")
             print(" -> You may want to modify the instance of your problem (adding more days...)")
         
-        print(f"Computational time: {round((time.time()-start_time),3)} s")
+        print(f"\nComputational time: {round((time.time()-start_time),3)} s")
+        self.append_to_report(f"\n\n\nComputational time: {round((time.time()-start_time),3)} s")
         print(f"Best objective value: {self.chronometer.best_objective}")
+        self.append_to_report(f"\nBest objective value: {self.chronometer.best_objective}")
         print(f"Total solutions found: {self.chronometer.solution_count}")
+        self.append_to_report(f"\nTotal solutions found: {self.chronometer.solution_count}")
 
         return self.generated_courses
